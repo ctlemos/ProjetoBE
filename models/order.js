@@ -11,8 +11,8 @@ async function getOrderById(orderId) {
 }
 
 // crirar nova encomenda
-async function insertOrder(userId, date) {
-    const [orderResult] = await pool.execute('INSERT INTO orders (user_id, order_date) VALUES (?, ?)', [userId, date]);
+async function insertOrder(userId) {
+    const [orderResult] = await pool.execute('INSERT INTO orders (user_id) VALUES (?)', [userId]);
     return orderResult.insertId;
 }
 

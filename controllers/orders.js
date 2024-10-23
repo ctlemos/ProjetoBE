@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const joi = require("joi");
+const pool = require("../models/connection");
 const auth = require("../middleware/auth")
 const {
     getAllOrders,
@@ -14,7 +15,6 @@ const {
 } = require("../models/order");
 
 const validateOrder = joi.object({
-    userId: joi.number().integer().required(),
     products: joi.array().items(
         joi.object({
             productId: joi.number().integer().required(),
@@ -24,7 +24,7 @@ const validateOrder = joi.object({
 });
 
 //mostrar todas as encomendas
-router.get("/", async (request, response) => {
+router.get("/", auth, async (request, response) => {
     try {
         const [orders] = await getAllOrders();
         return response.send(orders);
@@ -34,7 +34,7 @@ router.get("/", async (request, response) => {
 });
 
 //mostrar encomendas por ID
-router.get("/:id", async (request, response) => {
+router.get("/:id", auth, async (request, response) => {
     try {
         const [order] = await getOrderById(request.params.id);
 
@@ -57,12 +57,14 @@ router.post("/", auth, async (request, response) => {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
+    order.user = request.payload;
+
     try {
         const connection = await pool.getConnection();
         await connection.beginTransaction();
 
         // inserir encomenda
-        const orderId = await insertOrder(order.userId, new Date());
+        const orderId = await insertOrder(order.user.user_id);
 
         // inserir detalhes da encomenda
         for (const product of order.products) {
@@ -85,7 +87,7 @@ router.post("/", auth, async (request, response) => {
 });
 
 //editar ume encomenda por ID
-router.put("/:id", async (request, response) => {
+router.put("/:id", auth, async (request, response) => {
     const order = request.body;
 
     // validar pedido
@@ -94,6 +96,8 @@ router.put("/:id", async (request, response) => {
     } catch (err) {
         return response.status(400).send({ "message": err.details[0].message });
     }
+
+    order.user = request.payload;
 
     try { //procurar pela encomenda
         const [existingOrder] = await getOrderById(request.params.id);
@@ -105,7 +109,7 @@ router.put("/:id", async (request, response) => {
         await connection.beginTransaction();
 
         // atualizar encomenda
-        await updateOrder(order.userId, request.params.id);
+        await updateOrder(order.user.user_id, request.params.id);
 
         // apagar produtos antigos e inserir novos
         await deleteOrderDetails(request.params.id);
@@ -122,12 +126,13 @@ router.put("/:id", async (request, response) => {
 
         return response.status(202).send({ id: request.params.id, ...order });
     } catch (err) {
+        console.log(err);
         return response.status(500).send({ "message": "Internal Server Error" });
     }
 });
 
 //apagar encomenda por ID
-router.delete("/:id", async (request, response) => {
+router.delete("/:id", auth, async (request, response) => {
     try {
         const [existingOrder] = await getOrderById(request.params.id);
 

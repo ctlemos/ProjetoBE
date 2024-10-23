@@ -1,22 +1,28 @@
+require("dotenv").config();
 const mysql = require('mysql2');
 
 /* estabelecer a conexão com a BD */
 const connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',          
+    host: process.env.DB_HOST,
+    user: '',          
     password: '',  
-    database: 'olga_lemos' 
-}); 
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT            
+});
 
 const pool = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
+    host: process.env.DB_HOST,
+    user: '',
     password: '',
-    database: 'olga_lemos',
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,           
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 });
+
+
+
 
 connection.connect((err) => {
     if (err) {
