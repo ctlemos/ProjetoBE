@@ -1,120 +1,162 @@
 const express = require("express");
+const Joi = require('joi');
 const bcrypt = require("bcrypt");
-const pool = require("../models/connection");
-const validateUser = require("../models/user");
+const {
+    getAllUsers,
+    getUserById,
+    createUser,
+    updateUser,
+    deleteUser
+} = require("../models/user");
+
 const router = express.Router();
 
+//validationschema de criação de novo user
+const validateUser = (user) => {
+    const schema = Joi.object({
+        name: Joi.string().min(3).max(255).required().messages({
+            'string.base': 'Name must be a string.',
+            'string.empty': 'Name must not be empty.',
+            'string.min': 'Name must be at least 3 characters long.',
+            'string.max': 'Name must be less than 255 characters long.',
+            'any.required': 'Name is required.',
+        }),
+        last_name: Joi.string().min(3).max(255).required().messages({
+            'string.base': 'Last Name must be a string.',
+            'string.empty': 'Last Name must not be empty.',
+            'string.min': 'Last Name must be at least 3 characters long.',
+            'string.max': 'Last Name must be less than 255 characters long.',
+            'any.required': 'Last Name is required.',
+        }),
+        password: Joi.string().pattern(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/).required().messages({
+            'string.pattern.base': 'Password must be at least 8 characters long and contain at least one letter and one number.',
+            'string.empty': 'Password must not be empty.',
+            'any.required': 'Password is required.',
+        }),
+        nif: Joi.string().pattern(/^\d{9}$/).required().messages({
+            'string.pattern.base': 'NIF must be a valid 9-digit number.',
+            'string.empty': 'NIF must not be empty.',
+            'any.required': 'NIF is required.',
+        }),
+        email: Joi.string().email().required().messages({
+            'string.email': 'Email must be a valid email address.',
+            'string.empty': 'Email must not be empty.',
+            'any.required': 'Email is required.',
+        }),
+        phone: Joi.string().pattern(/^\+?[1-9]\d{1,14}$/).required().messages({
+            'string.pattern.base': 'Phone number must be a valid international or local phone number.',
+            'string.empty': 'Phone number must not be empty.',
+            'any.required': 'Phone number is required.',
+        }),
+        address: Joi.string().max(255).required().messages({
+            'string.max': 'Address must be less than 255 characters long.',
+            'string.empty': 'Address must not be empty.',
+            'any.required': 'Address is required.',
+        }),
+        postal_code: Joi.string().pattern(/^\d{4}-\d{3}$/).required().messages({
+            'string.pattern.base': 'Postal code must be in the format xxxx-xxx (8 digits with a hyphen).',
+            'string.empty': 'Postal code must not be empty.',
+            'any.required': 'Postal code is required.',
+        }),
+        city: Joi.string().min(2).max(255).required().messages({
+            'string.min': 'City must be at least 2 characters long.',
+            'string.max': 'City must be less than 255 characters long.',
+            'string.empty': 'City must not be empty.',
+            'any.required': 'City is required.',
+        })
+    });
+    return schema.validate(user);
+};
+
+//mostrar todos os users
 router.get("/", async (request, response) => {
     try {
-        const [rows] = await pool.query("SELECT name, last_name, email FROM users");
-        return response.status(200).json(rows);
+        const [users] = await getAllUsers();
+        return response.status(200).json(users);
     } catch (err) {
         console.error("Error fetching users:", err.message);
         return response.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
+//mostrar user por ID
 router.get("/:id", async (request, response) => {
     try {
-        const query = "SELECT name, last_name, email FROM users WHERE user_id = ?";
-        const [results] = await pool.query(query, [request.params.id]);
-
-        if (results.lenght === 0) {
+        const [user] = await getUserById(request.params.id);
+        if (user.length === 0) {
             return response.status(404).json({ message: "User Not Found" });
         }
-        return response.status(200).json(results[0]);
+        return response.status(200).json(user[0]);
     } catch (err) {
         console.error("Error fetching user by ID:", err.message);
         return response.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
+//criar novo user
 router.post("/", async (request, response) => {
-    
     const newUser = request.body;
+    const { error } = validateUser(newUser);
 
-    const error = validateUser(newUser);
     if (error) {
-        return response.status(400).json({ message: error });
+        return response.status(400).json({ message: error.details[0].message });
     }
 
     try {
+        //hashing da password / encriptação
         const salt = await bcrypt.genSalt(10);
         newUser.password = await bcrypt.hash(newUser.password, salt);
-        
-        const query = "INSERT INTO users (name, last_name, password, nif, email, phone, address, postal_code, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        const [results] = await pool.query(query, [newUser.name, newUser
-            .last_name, newUser.password, newUser.nif, newUser.email, newUser.phone, newUser.address, newUser.postal_code, newUser.city
-        ]);
 
-        newUser.id = results.insertId;
-        return response.status(201).json(newUser)
+        const userId = await createUser(newUser);
+        newUser.id = userId;
 
+        return response.status(201).json(newUser);
     } catch (err) {
         console.error("Error creating new user:", err.message);
-        return response.status(400).send({"message": err.details[0].message});
+        return response.status(500).json({ message: "Internal Server Error" });
     }
 });
 
+//editar user por ID
 router.put("/:id", async (request, response) => {
     const updatedUser = request.body;
-    const userId = parseInt(request.params.id);
+    const { error } = validateUser(updatedUser);
 
-    const error = validateUser(updatedUser);
-    if (error) return response.status(400).json({ message: error });
+    if (error) return response.status(400).json({ message: error.details[0].message });
 
     try {
-        // validar se o user existe
-        const [existingUser] = await pool.query("SELECT * FROM users WHERE user_id = ?", [userId]);
-        if (!existingUser.length) return response.status(404).json({ message: "User Not Found" });
-
-        // destruturar os detalhes atualizados do utilizados
-        const { name, last_name, password, nif, email, phone, address, postal_code, city } = updatedUser;
-        const currentUser = existingUser[0];
-
-        // verificar se algum campo mudou excepto a pass
-        const isUnchanged = [name, last_name, nif, email, phone, address, postal_code, city]
-            .every((field, index) => field === Object.values(currentUser)[index + 1]);
-
-        // se nao existir mudanças, excepto a pass
-        if (isUnchanged && !password) {
-            return response.status(400).json({ message: "No changes detected" });
+        const [existingUser] = await getUserById(request.params.id);
+        if (existingUser.length === 0) {
+            return response.status(404).json({ message: "User Not Found" });
         }
-
-        // Hash na pass se colocar nova, se não manter a antiga hashed pass
-        let hashedPassword = currentUser.password;
-        if (password) {
+        //cria nova pass com hashing caso mude
+        let hashedPassword = existingUser[0].password;
+        if (updatedUser.password) {
             const salt = await bcrypt.genSalt(10);
-            hashedPassword = await bcrypt.hash(password, salt);
+            hashedPassword = await bcrypt.hash(updatedUser.password, salt);
         }
+        updatedUser.password = hashedPassword;
 
-        // Update se existir mudanças
-        const [result] = await pool.query(
-            "UPDATE users SET name = ?, last_name = ?, password = ?, nif = ?, email = ?, phone = ?, address = ?, postal_code = ?, city = ? WHERE user_id = ?", 
-            [name, last_name, hashedPassword, nif, email, phone, address, postal_code, city, userId]
-        );
+        await updateUser(request.params.id, updatedUser);
 
-        if (!result.affectedRows) return response.status(404).json({ message: "User not found" });
-
-        return response.status(200).json({ ...updatedUser, id: userId });
+        return response.status(200).json({ ...updatedUser, id: request.params.id });
     } catch (err) {
         console.error("Error updating user:", err.message);
         return response.status(500).json({ message: "Internal Server Error" });
     }
 });
 
+//apagar user por ID
 router.delete("/:id", async (request, response) => {
     try {
-        const query = "DELETE FROM users WHERE user_id = ?";
-        const [results] = await pool.query(query, [request.params.id]);
-
+        const [results] = await deleteUser(request.params.id);
         if (results.affectedRows === 0) {
             return response.status(404).json({ message: "User not found" });
         }
-        return response.status(200).json({ message: "User deleted successfully "});
+        return response.status(200).json({ message: "User deleted successfully" });
     } catch (err) {
         console.error("Error deleting user", err.message);
-        return response.status(400).send({"message": err.details[0].message});
+        return response.status(500).json({ message: "Internal Server Error" });
     }
 });
 

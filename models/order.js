@@ -1,70 +1,56 @@
-const pool = require("../models/connection"); 
+const pool = require('./connection');
 
-async function createOrder(userId, products) {
-    const connection = await pool.getConnection();  
-
-    try {
-        await connection.beginTransaction();
-
-        //inserir a encomenda na tabela de encomendas
-        const [orderResult] = await connection.execute(
-            'INSERT INTO orders (user_id, order_date) VALUES (?, ?)', 
-            [userId, new Date()]
-        );
-        const orderId = orderResult.insertId;
-
-        //inserir os produtos na tabela de detalhes da encomenda
-        for (const product of products) {
-            await connection.execute(
-                'INSERT INTO order_details (order_id, product_id, quantity, price_each) VALUES (?, ?, ?, ?)', 
-                [orderId, product.productId, product.quantity, product.priceEach]
-            );
-        }
-
-        await connection.commit();
-        console.log("Order created successfully");
-    } catch (error) {
-        //voltar atrás se existir algum erro
-        await connection.rollback();
-        console.error("Error creating order, transaction rolled back:", error);
-    } finally {
-        connection.release();
-    }
+// mostrar todas as encomendas
+async function getAllOrders() {
+    return pool.query('SELECT order_id, user_id AS userId, order_date AS orderDate FROM orders');
 }
 
+// encontrar encomenda por ID
+async function getOrderById(orderId) {
+    return pool.query('SELECT * FROM orders WHERE order_id = ?', [orderId]);
+}
 
+// crirar nova encomenda
+async function insertOrder(userId, date) {
+    const [orderResult] = await pool.execute('INSERT INTO orders (user_id, order_date) VALUES (?, ?)', [userId, date]);
+    return orderResult.insertId;
+}
 
+// procurar preço do produto por ID
+async function getProductPrice(productId) {
+    return pool.execute('SELECT price FROM products WHERE product_id = ?', [productId]);
+}
 
-// procurar uma encomenda por ID
-/* async function getOrderById(orderId) {
-    try {
-        // encontrar encomenda e produtos
-        const [orderRows] = await pool.query(
-            "SELECT o.id, o.order_date, oi.product_id, oi.quantity, oi.price_each FROM orders o " +
-            "JOIN order_items oi ON o.id = oi.order_id WHERE o.id = ?", 
-            [orderId]
-        );
+//inserir detalhes da encomenda 
+async function insertOrderDetails(orderId, productId, quantity, priceEach) {
+    return pool.execute(
+        'INSERT INTO order_details (order_id, product_id, quantity, price_each) VALUES (?, ?, ?, ?)',
+        [orderId, productId, quantity, priceEach]
+    );
+}
 
-        if (orderRows.length === 0) {
-            return null; 
-        }
+// modificar uma encomenda
+async function updateOrder(userId, orderId) {
+    return pool.execute('UPDATE orders SET user_id = ? WHERE order_id = ?', [userId, orderId]);
+}
 
-        const order = {
-            id: orderRows[0].id,
-            orderDate: orderRows[0].order_date,
-            products: orderRows.map(row => ({
-                productId: row.product_id,
-                quantity: row.quantity,
-                priceEach: row.price_each
-            }))
-        };
+// apagar detalhes da encomenda
+async function deleteOrderDetails(orderId) {
+    return pool.execute('DELETE FROM order_details WHERE order_id = ?', [orderId]);
+}
 
-        return order;
+// apagar encomenda
+async function deleteOrder(orderId) {
+    return pool.execute('DELETE FROM orders WHERE order_id = ?', [orderId]);
+}
 
-    } catch (err) {
-        console.error("Error fetching order:", err.message);
-        throw new Error("Failed to fetch order");
-    }
-} */
-
-module.exports =  createOrder;
+module.exports = {
+    getAllOrders,
+    getOrderById,
+    insertOrder,
+    getProductPrice,
+    insertOrderDetails,
+    updateOrder,
+    deleteOrderDetails,
+    deleteOrder
+};

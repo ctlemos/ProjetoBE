@@ -1,10 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const joi = require("joi");
-const pool = require("../models/connection"); 
+const auth = require("../middleware/auth")
+const {
+    getAllOrders,
+    getOrderById,
+    insertOrder,
+    getProductPrice,
+    insertOrderDetails,
+    updateOrder,
+    deleteOrderDetails,
+    deleteOrder
+} = require("../models/order");
 
-const validationSchema = joi.object({
-    userId: joi.number().integer().required(), 
+const validateOrder = joi.object({
+    userId: joi.number().integer().required(),
     products: joi.array().items(
         joi.object({
             productId: joi.number().integer().required(),
@@ -13,18 +23,20 @@ const validationSchema = joi.object({
     )
 });
 
+//mostrar todas as encomendas
 router.get("/", async (request, response) => {
     try {
-        const [orders] = await pool.query('SELECT order_id, user_id AS userId, order_date AS orderDate FROM orders');
+        const [orders] = await getAllOrders();
         return response.send(orders);
     } catch (err) {
         return response.status(500).send({ "message": "Internal Server Error" });
     }
 });
 
+//mostrar encomendas por ID
 router.get("/:id", async (request, response) => {
     try {
-        const [order] = await pool.query('SELECT * FROM orders WHERE order_id = ?', [request.params.id]);
+        const [order] = await getOrderById(request.params.id);
 
         if (order.length === 0) {
             return response.status(404).send({ "message": "Not Found" });
@@ -35,11 +47,12 @@ router.get("/:id", async (request, response) => {
     }
 });
 
-router.post("/", async (request, response) => {
+//criar nova encomenda
+router.post("/", auth, async (request, response) => {
     const order = request.body;
 
     try {
-        await validationSchema.validateAsync(order);
+        await validateOrder.validateAsync(order);
     } catch (err) {
         return response.status(400).send({ "message": err.details[0].message });
     }
@@ -48,23 +61,16 @@ router.post("/", async (request, response) => {
         const connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        const [orderResult] = await connection.execute(
-            'INSERT INTO orders (user_id, order_date) VALUES (?, ?)', 
-            [order.userId, new Date()]
-        );
-        const orderId = orderResult.insertId;
+        // inserir encomenda
+        const orderId = await insertOrder(order.userId, new Date());
 
-        for (let index = 0; index < order.products.length; index++) {
-            const product = order.products[index];
-
-            const [productData] = await connection.execute('SELECT price FROM products WHERE product_id = ?', [product.productId]);
+        // inserir detalhes da encomenda
+        for (const product of order.products) {
+            const [productData] = await getProductPrice(product.productId);
 
             if (productData.length > 0) {
                 const priceEach = productData[0].price;
-                await connection.execute(
-                    'INSERT INTO order_details (order_id, product_id, quantity, price_each) VALUES (?, ?, ?, ?)', 
-                    [orderId, product.productId, product.quantity, priceEach]
-                );
+                await insertOrderDetails(orderId, product.productId, product.quantity, priceEach);
             }
         }
 
@@ -78,17 +84,19 @@ router.post("/", async (request, response) => {
     }
 });
 
+//editar ume encomenda por ID
 router.put("/:id", async (request, response) => {
     const order = request.body;
 
+    // validar pedido
     try {
-        await validationSchema.validateAsync(order);
+        await validateOrder.validateAsync(order);
     } catch (err) {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
-    try {
-        const [existingOrder] = await pool.query('SELECT * FROM orders WHERE order_id = ?', [request.params.id]);
+    try { //procurar pela encomenda
+        const [existingOrder] = await getOrderById(request.params.id);
         if (existingOrder.length === 0) {
             return response.status(404).send({ "message": "Not Found" });
         }
@@ -96,26 +104,21 @@ router.put("/:id", async (request, response) => {
         const connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        await connection.execute('UPDATE orders SET user_id = ? WHERE order_id = ?', [order.userId, request.params.id]);
+        // atualizar encomenda
+        await updateOrder(order.userId, request.params.id);
 
-        await connection.execute('DELETE FROM order_details WHERE order_id = ?', [request.params.id]);
-
-        for (let index = 0; index < order.products.length; index++) {
-            const product = order.products[index];
-
-            const [productData] = await connection.execute('SELECT price FROM products WHERE product_id = ?', [product.productId]);
-
+        // apagar produtos antigos e inserir novos
+        await deleteOrderDetails(request.params.id);
+        for (const product of order.products) {
+            const [productData] = await getProductPrice(product.productId);
             if (productData.length > 0) {
                 const priceEach = productData[0].price;
-                await connection.execute(
-                    'INSERT INTO order_details (order_id, product_id, quantity, price_each) VALUES (?, ?, ?, ?)',
-                    [request.params.id, product.productId, product.quantity, priceEach]
-                );
+                await insertOrderDetails(request.params.id, product.productId, product.quantity, priceEach);
             }
         }
 
         await connection.commit();
-        connection.release(); 
+        connection.release();
 
         return response.status(202).send({ id: request.params.id, ...order });
     } catch (err) {
@@ -123,16 +126,17 @@ router.put("/:id", async (request, response) => {
     }
 });
 
+//apagar encomenda por ID
 router.delete("/:id", async (request, response) => {
     try {
-        const [existingOrder] = await pool.query('SELECT * FROM orders WHERE order_id = ?', [request.params.id]);
+        const [existingOrder] = await getOrderById(request.params.id);
 
         if (existingOrder.length === 0) {
             return response.status(404).send({ "message": "Not Found" });
         }
 
-        await pool.query('DELETE FROM orders WHERE order_id = ?', [request.params.id]);
-        await pool.query('DELETE FROM order_details WHERE order_id = ?', [request.params.id]);
+        await deleteOrder(request.params.id);
+        await deleteOrderDetails(request.params.id);
 
         return response.status(202).send({ "message": "Deleted successfully" });
     } catch (err) {
