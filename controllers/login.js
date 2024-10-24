@@ -23,34 +23,36 @@ router.post("/", async (request, response) => {
     }
 
    
-        // encontrar user por email
-        const user = await findUserByEmail(login.email);
+    // encontrar user por email
+    const user = await findUserByEmail(login.email);
 
-        // retornar erro quando não encontrado
-        if (!user) {
-            return response.status(400).send({ "message": "Incorrect Credentials" });
-        }
+    // retornar erro quando não encontrado
+    if (!user) {
+         return response.status(400).send({ "message": "Incorrect Credentials" });
+    }
 
-        // verificar se a password corresponde à hashed password guardada na database
-        const success = await bcrypt.compare(login.password, user.password);
-        if (!success) {
-            return response.status(400).send({ "message": "Incorrect Credentials" });
-        }
+    // verificar se a password corresponde à hashed password guardada na database
+    const success = await bcrypt.compare(login.password, user.password);
+    if (!success) {
+        return response.status(400).send({ "message": "Incorrect Credentials" });
+    }
 
-        //se estiver tudo correto gerar JWT token 
-        const payload = {
-            "user_id": user.user_id, 
-            "email": user.email
-        };
+    //se estiver tudo correto gerar JWT token 
+    const payload = {
+        "user_id": user.user_id, 
+        "email": user.email,
+        "isAdmin": user.isAdmin
+    };
 
-        const secretKey = "SecretKey!1";
-
-        const token = jwt.sign(payload, secretKey, (err, token) => {
-            return response.send({
-                "Authorization" : "Bearer "+token,
-                "token": token
+    const secretKey = process.env.JWT_SECRET_KEY;
+    jwt.sign(payload, secretKey, (err, token) => {
+        return response
+            .header({"Authorization": "Bearer "+token})
+            .send({
+                    "Authorization": "Bearer "+token,
+                    "token": token
             });
-        });
+    });
 
 });
 

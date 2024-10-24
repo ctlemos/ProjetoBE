@@ -33,7 +33,7 @@ async function createUser(newUser) {
         newUser.phone,
         newUser.address,
         newUser.postal_code,
-        newUser.city
+        newUser.city,
     ]);
     return results.insertId;
 }
@@ -55,6 +55,13 @@ async function updateUser(userId, updatedUser) {
     ]);
 }
 
+// Update isAdmin estado de um user
+async function updateUserAdminStatus(userId, isAdmin) {
+    const query = 'UPDATE users SET is_admin = ? WHERE id = ?';
+    const [result] = await pool.query(query, [isAdmin, userId]);
+    return result.affectedRows; // Return the number of affected rows
+}
+
 //apagar user por ID
 async function deleteUser(userId) {
     return pool.query("DELETE FROM users WHERE user_id = ?", [userId]);
@@ -66,5 +73,6 @@ module.exports = {
     findUserByEmail,
     createUser,
     updateUser,
+    updateUserAdminStatus,
     deleteUser
 };

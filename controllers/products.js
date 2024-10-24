@@ -1,95 +1,117 @@
 const express = require("express");
-const pool = require("../models/connection");
-const validateProduct = require("../models/product");
-const router = express.Router(); 
+const joi = require("joi");
+const auth = require("../middleware/auth");
+const {
+    getAllProducts,
+    getProductById,
+    createProduct,
+    updateProduct,
+    deleteProduct
+} = require("../models/Product");
 
+const router = express.Router();
 
+// Validation schema para os produtos
+const validateProduct = joi.object({
+    name: joi.string().required().min(1).max(255),
+    price: joi.number().min(1).max(9999).required()
+});
+
+// ver todos os produtos
 router.get("/", async (request, response) => {
     try {
-        const [rows] = await pool.query("SELECT name, price FROM products");
-        return response.status(200).json(rows);
+        const [products] = await getAllProducts();
+        return response.status(200).json(products);
     } catch (err) {
         console.error("Error fetching products:", err.message);
-        return response.status(500).json({ error: 'Internal Server Error' });
+        return responseponse.status(404).send({"message":"Not Found"});
     }
 });
 
+// mostrar um produto em especifico por ID
 router.get("/:id", async (request, response) => {
     try {
-        const query = "SELECT * FROM products WHERE product_id = ?";
-        const [results] = await pool.query(query, [request.params.id]);
+        const product = await getProductById(request.params.id);
 
-        if (results.length === 0) {
-            return response.status(404).json({ message: "Product not found" });
+        if (!product) {
+            return response.status(404).send({ "message": "Product not found" });
         }
-        return response.status(200).json(results[0]);
+
+        return response.status(200).send(product);
     } catch (err) {
         console.error("Error fetching product by ID:", err.message);
-        return response.status(500).json({ error: 'Internal Server Error' });
+        return response.status(400).send({ "message": "Bad Request" });
     }
 });
 
-router.post("/", async (request, response) => {
+// criar um novo produto
+router.post("/", auth, async (request, response) => {
+    if (!request.payload.isAdmin) {
+        return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
+    }
+
     const newProduct = request.body;
 
-    const error = validateProduct(newProduct);
-    if (error) {
-        return response.status(400).json({ message: error });
+    // validar detalhes do produto
+    try {
+        await validateProduct.validateAsync(newProduct);
+    } catch (err) {
+        return response.status(400).send({ "message": err.details[0].message });
     }
 
+    // criar produto
     try {
-        const query = "INSERT INTO products (name, price) VALUES (?, ?)";
-        const [results] = await pool.query(query, [newProduct.name, newProduct.price]);
-        newProduct.id = results.insertId;
-        return response.status(201).json(newProduct);
+        const productId = await createProduct(newProduct);
+        return response.status(201).send({ id: productId, ...newProduct });
     } catch (err) {
         console.error("Error creating product:", err.message);
-        return response.status(400).send({"message": err.details[0].message});
+        return response.status(400).send({"message":"Bad Request"});
     }
 });
 
-router.put("/:id", async (request, response) => {
+// atualizar um produto por ID
+router.put("/:id", auth, async (request, response) => {
+    if (!request.payload.isAdmin) {
+        return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
+    }
+
     const updatedProduct = request.body;
-    const productId = parseInt(request.params.id); 
 
-    const error = validateProduct(updatedProduct);
-    if (error) return response.status(400).json({ message: error });
-
+    // validar os novos detalhes
     try {
-        // verificar se existe 
-        const [existingProduct] = await pool.query("SELECT * FROM products WHERE product_id = ?", [productId]);
-        if (!existingProduct.length) return response.status(404).json({ message: "Product not found" });
+        await validateProduct.validateAsync(updatedProduct);
+    } catch (err) {
+        return response.status(400).send({ "message": err.details[0].message });
+    }
 
-        // verificar se existe mudança
-        const { name, price } = updatedProduct;
-        const currentProduct = existingProduct[0];
-        if (name === currentProduct.name && price === currentProduct.price) {
-            return response.status(400).json({ message: "No changes detected" });
+    // atualizar produto
+    try {
+        const affectedRows = await updateProduct(request.params.id, updatedProduct);
+        if (affectedRows === 0) {
+            return response.status(404).send({ "message": "Product not found" });
         }
-
-        // Update se existir mudança
-        const [result] = await pool.query("UPDATE products SET name = ?, price = ? WHERE product_id = ?", [name, price, productId]);
-        if (!result.affectedRows) return response.status(404).json({ message: "Product not found" });
-
-        return response.status(200).json({ ...updatedProduct, id: productId });
+        return response.status(200).send({ id: request.params.id, ...updatedProduct });
     } catch (err) {
         console.error("Error updating product:", err.message);
-        return response.status(400).send({"message": err.details[0].message});
+        return response.status(400).send({"message":"Bad Request"});
     }
 });
 
-router.delete("/:id", async (request, response) => {
-    try {
-        const query = "DELETE FROM products WHERE product_id = ?";
-        const [results] = await pool.query(query, [request.params.id]);
+// apagar um produto por ID
+router.delete("/:id", auth, async (request, response) => {
+    if (!request.payload.isAdmin) {
+        return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
+    }
 
-        if (results.affectedRows === 0) {
-            return response.status(404).json({ message: "Product not found" });
+    try {
+        const affectedRows = await deleteProduct(request.params.id);
+        if (affectedRows === 0) {
+            return response.status(404).send({ "message": "Product not found" });
         }
-        return response.status(200).json({ message: "Product deleted successfully" });
+        return response.status(200).send({ "message": "Product deleted successfully" });
     } catch (err) {
         console.error("Error deleting product:", err.message);
-        return response.status(400).send({"message": err.details[0].message});
+        return response.status(400).send({"message":"Bad Request"});
     }
 });
 

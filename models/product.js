@@ -1,12 +1,42 @@
-function validateProduct(product) {
-  if (!product.name || product.name.length < 3 || product.name.length > 255) {
-      return "Name must be between 3 and 255 characters.";
-  }
-  
-  if (!product.price || product.price < 1 || product.price > 9999) {
-      return "Price must be between 1 and 9999.";
-  }
-  return null;
+const pool = require('./connection'); // MySQL connection pool
+
+//ver todos os produtos
+async function getAllProducts() {
+    const [rows] = await pool.query('SELECT product_id, name, price FROM products');
+    return rows;
 }
 
-module.exports = validateProduct;
+//econtrar produto por ID
+async function getProductById(id) {
+    const [rows] = await pool.query('SELECT product_id, name, price FROM products WHERE product_id = ?', [id]);
+    return rows[0]; // retorna o primeiro produto encontrado ou indefinido
+}
+
+//criar novo produto
+async function createProduct(product) {
+    const query = 'INSERT INTO products (name, price) VALUES (?, ?)';
+    const [result] = await pool.query(query, [product.name, product.price]);
+    return result.insertId; // retorna novo produto + id
+}
+
+//alterar um produto
+async function updateProduct(id, product) {
+    const query = 'UPDATE products SET name = ?, price = ? WHERE product_id = ?';
+    const [result] = await pool.query(query, [product.name, product.price, id]);
+    return result.affectedRows; // retorna o numero de colunas mudadas
+}
+
+//apagar um produto
+async function deleteProduct(id) {
+    const query = 'DELETE FROM products WHERE product_id = ?';
+    const [result] = await pool.query(query, [id]);
+    return result.affectedRows; 
+}
+
+module.exports = {
+    getAllProducts,
+    getProductById,
+    createProduct,
+    updateProduct,
+    deleteProduct
+};

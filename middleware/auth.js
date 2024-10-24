@@ -9,7 +9,7 @@ function auth(request, response, next) {
     }
 
     const token = header.replace("Bearer ", "");
-    const secretKey = "SecretKey!1";
+    const secretKey = process.env.JWT_SECRET_KEY;
 
     jwt.verify(token, secretKey, (err, payload) => {
         

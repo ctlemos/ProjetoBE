@@ -105,6 +105,10 @@ router.put("/:id", auth, async (request, response) => {
             return response.status(404).send({ "message": "Not Found" });
         }
 
+        if(existingOrder.user_id != request.payload.user_id && !request.payload.isAdmin){
+            return response.status(403).send({"message":"You do not have access to this action"});
+        }
+
         const connection = await pool.getConnection();
         await connection.beginTransaction();
 
@@ -127,7 +131,7 @@ router.put("/:id", auth, async (request, response) => {
         return response.status(202).send({ id: request.params.id, ...order });
     } catch (err) {
         console.log(err);
-        return response.status(500).send({ "message": "Internal Server Error" });
+        return response.status(400).send({ "message": "Bad Request" });
     }
 });
 
