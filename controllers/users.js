@@ -64,30 +64,40 @@ const validateUser = (user) => {
             'string.max': 'City must be less than 255 characters long.',
             'string.empty': 'City must not be empty.',
             'any.required': 'City is required.',
-        }),
-        isAdmin: joi.boolean().optional() // Optional isAdmin field, defaults to false
+        })
     });
     return schema.validate(user);
 };
 
 //mostrar todos os users
 router.get("/", auth, async (request, response) => {
+    //só o admin é que pode ver todos os users
+    if (!request.payload.is_admin) {
+        return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
+    }
+
     try {
         const [users] = await getAllUsers();
         return response.status(200).send(users);
     } catch (err) {
         console.error("Error fetching users:", err.message);
-        return response.status(400).send({ error: 'Bad Requestr' });
+        return response.status(400).send({ error: 'Bad Request' });
     }
 });
 
 //mostrar user por ID
 router.get("/:id", auth, async (request, response) => {
     try {
-        const [user] = await getUserById(request.params.id);
+        const user = await getUserById(request.params.id);
         if (user.length === 0) {
             return response.status(404).send({ message: "User Not Found" });
         }
+
+        //só o user autenticado e o admin é que ver os dados
+        if (user[0].user_id != request.payload.user_id && !request.payload.is_admin) {
+            return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
+        }
+
         return response.status(200).send(user[0]);
     } catch (err) {
         console.error("Error fetching user by ID:", err.message);
@@ -109,12 +119,6 @@ router.post("/", async (request, response) => {
         const salt = await bcrypt.genSalt(10);
         newUser.password = await bcrypt.hash(newUser.password, salt);
 
-        // Ensure isAdmin is always set to false when creating a user
-        //newUser.isAdmin = false;
-
-        // Set isAdmin to false if it's not provided in the request
-        newUser.isAdmin = newUser.isAdmin || false;
-
         const userId = await createUser(newUser);
         newUser.id = userId;
 
@@ -133,10 +137,16 @@ router.put("/:id", auth, async (request, response) => {
     if (error) return response.status(400).send({ message: error.details[0].message });
 
     try {
-        const [existingUser] = await getUserById(request.params.id);
+        const existingUser = await getUserById(request.params.id);
         if (existingUser.length === 0) {
             return response.status(404).send({ message: "User Not Found" });
         }
+
+        //só o user autenticado e o admin é que podem modificar os dados
+        if (existingUser[0].user_id != request.payload.user_id && !request.payload.is_admin) {
+            return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
+        }
+
         //cria nova pass com hashing caso mude
         let hashedPassword = existingUser[0].password;
         if (updatedUser.password) {
@@ -154,31 +164,31 @@ router.put("/:id", auth, async (request, response) => {
     }
 });
 
-//editar isAdmin status (poder haver mais do que um administrador)
-router.put('/:id/admin', async (req, res) => {
-    try {
-        const affectedRows = await updateUserAdminStatus(req.params.id, req.body.isAdmin);
-        if (affectedRows === 0) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.status(200).json({ message: 'User admin status updated' });
-    } catch (err) {
-        console.error('Error updating user admin status:', err.message);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
-});
-
 //apagar user por ID
 router.delete("/:id", auth, async (request, response) => {
     try {
-        const [results] = await deleteUser(request.params.id);
-        if (results.affectedRows === 0) {
+        // verificar se o user existe e se tem autenticação
+        const existingUser = await getUserById(request.params.id);
+        if (existingUser.length === 0) {
             return response.status(404).send({ message: "User not found" });
         }
+
+        //só o user autenticado e o admin é que apagar os dados
+        if (existingUser[0].user_id != request.payload.user_id && !request.payload.is_admin) {
+            return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
+        }
+
+        // se tiver autenticação apagar
+        const [result] = await deleteUser(request.params.id);
+        if (result.affectedRows === 0) {
+            return response.status(404).send({ message: "User not found" });
+        }
+
         return response.status(200).send({ message: "User deleted successfully" });
+
     } catch (err) {
         console.error("Error deleting user", err.message);
-        return response.status(500).send({ message: "Internal Server Error" });
+        return response.status(400).send({"message":"Bad Request"});
     }
 });
 

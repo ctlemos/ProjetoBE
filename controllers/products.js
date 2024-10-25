@@ -20,11 +20,11 @@ const validateProduct = joi.object({
 // ver todos os produtos
 router.get("/", async (request, response) => {
     try {
-        const [products] = await getAllProducts();
+        const products = await getAllProducts();
         return response.status(200).json(products);
     } catch (err) {
         console.error("Error fetching products:", err.message);
-        return responseponse.status(404).send({"message":"Not Found"});
+        return response.status(404).send({"message":"Not Found"});
     }
 });
 
@@ -46,7 +46,9 @@ router.get("/:id", async (request, response) => {
 
 // criar um novo produto
 router.post("/", auth, async (request, response) => {
-    if (!request.payload.isAdmin) {
+    
+    //só o admin é que pode criar produtos
+    if (!request.payload.is_admin) {
         return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
     }
 
@@ -71,7 +73,9 @@ router.post("/", auth, async (request, response) => {
 
 // atualizar um produto por ID
 router.put("/:id", auth, async (request, response) => {
-    if (!request.payload.isAdmin) {
+
+    //só o admin é que pode alterar um produto
+    if (!request.payload.is_admin) {
         return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
     }
 
@@ -99,7 +103,9 @@ router.put("/:id", auth, async (request, response) => {
 
 // apagar um produto por ID
 router.delete("/:id", auth, async (request, response) => {
-    if (!request.payload.isAdmin) {
+
+    //só o amdin é que pode apagar um produto
+    if (!request.payload.is_admin) {
         return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
     }
 
@@ -109,6 +115,7 @@ router.delete("/:id", auth, async (request, response) => {
             return response.status(404).send({ "message": "Product not found" });
         }
         return response.status(200).send({ "message": "Product deleted successfully" });
+
     } catch (err) {
         console.error("Error deleting product:", err.message);
         return response.status(400).send({"message":"Bad Request"});

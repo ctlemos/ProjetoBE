@@ -7,7 +7,8 @@ async function getAllUsers() {
 
 //procurar user por ID
 async function getUserById(userId) {
-    return pool.query("SELECT name, last_name, email FROM users WHERE user_id = ?", [userId]);
+    const [rows] = await pool.query("SELECT user_id, name, last_name, email, is_admin FROM users WHERE user_id = ?", [userId]);
+    return rows; // Only return the rows, which contain the user data
 }
 
 //procurar user por email
@@ -23,7 +24,7 @@ async function findUserByEmail(email) {
 
 //criar novo user
 async function createUser(newUser) {
-    const query = "INSERT INTO users (name, last_name, password, nif, email, phone, address, postal_code, city) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    const query = "INSERT INTO users (name, last_name, password, nif, email, phone, address, postal_code, city, is_admin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     const [results] = await pool.query(query, [
         newUser.name,
         newUser.last_name,
@@ -34,6 +35,7 @@ async function createUser(newUser) {
         newUser.address,
         newUser.postal_code,
         newUser.city,
+        newUser.is_admin
     ]);
     return results.insertId;
 }
@@ -55,13 +57,6 @@ async function updateUser(userId, updatedUser) {
     ]);
 }
 
-// Update isAdmin estado de um user
-async function updateUserAdminStatus(userId, isAdmin) {
-    const query = 'UPDATE users SET is_admin = ? WHERE id = ?';
-    const [result] = await pool.query(query, [isAdmin, userId]);
-    return result.affectedRows; // Return the number of affected rows
-}
-
 //apagar user por ID
 async function deleteUser(userId) {
     return pool.query("DELETE FROM users WHERE user_id = ?", [userId]);
@@ -73,6 +68,5 @@ module.exports = {
     findUserByEmail,
     createUser,
     updateUser,
-    updateUserAdminStatus,
     deleteUser
 };

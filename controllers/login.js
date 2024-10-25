@@ -41,7 +41,7 @@ router.post("/", async (request, response) => {
     const payload = {
         "user_id": user.user_id, 
         "email": user.email,
-        "isAdmin": user.isAdmin
+        "is_admin": user.is_admin
     };
 
     const secretKey = process.env.JWT_SECRET_KEY;

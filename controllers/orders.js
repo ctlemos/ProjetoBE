@@ -26,9 +26,16 @@ const validateOrder = joi.object({
 //mostrar todas as encomendas
 router.get("/", auth, async (request, response) => {
     try {
+        // só o admin é que pode ver todas as encomendas
+        if (!request.payload.is_admin) {
+            return response.status(403).send({ "message": "You do not have access to this action" });
+        }
+
         const [orders] = await getAllOrders();
         return response.send(orders);
+
     } catch (err) {
+        console.error("Error fetching orders:", err.message);
         return response.status(500).send({ "message": "Internal Server Error" });
     }
 });
@@ -41,6 +48,13 @@ router.get("/:id", auth, async (request, response) => {
         if (order.length === 0) {
             return response.status(404).send({ "message": "Not Found" });
         }
+        
+        //so um user que fez a encomenda e o admin é que podem ver a encomenda
+        if(order[0].user_id != request.payload.user_id && !request.payload.is_admin){
+            return response.status(403).send({"message":"You do not have access to this action"});
+        }
+
+
         return response.send(order[0]);
     } catch (err) {
         return response.status(400).send({ "message": "Bad Request" });
@@ -105,7 +119,8 @@ router.put("/:id", auth, async (request, response) => {
             return response.status(404).send({ "message": "Not Found" });
         }
 
-        if(existingOrder.user_id != request.payload.user_id && !request.payload.isAdmin){
+        //so um user que criou a encomenda e o admin é que podem alterar a encomenda
+        if(existingOrder[0].user_id != request.payload.user_id && !request.payload.is_admin){
             return response.status(403).send({"message":"You do not have access to this action"});
         }
 
@@ -142,6 +157,11 @@ router.delete("/:id", auth, async (request, response) => {
 
         if (existingOrder.length === 0) {
             return response.status(404).send({ "message": "Not Found" });
+        }
+
+        //so um user autenticado e o admin é que podem apagar a encomenda
+        if(existingOrder[0].user_id != request.payload.user_id && !request.payload.is_admin){
+            return response.status(403).send({"message":"You do not have access to this action"});
         }
 
         await deleteOrder(request.params.id);
