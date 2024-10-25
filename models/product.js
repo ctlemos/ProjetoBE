@@ -7,10 +7,15 @@ async function getAllProducts() {
 }
 
 //econtrar produto por ID
-async function getProductById(id) {
-    const [rows] = await pool.query('SELECT product_id, name, price FROM products WHERE product_id = ?', [id]);
+async function getProductById(categorie_id) {
+    const [rows] = await pool.query('SELECT product_id, name, price FROM products WHERE product_id = ?', [categorie_id]);
     return rows[0]; // retorna o primeiro produto encontrado ou indefinido
 }
+
+async function getProductsFromCategorie(categorie_id){
+    const [rows] = await pool.query('SELECT product_id, name, price FROM products WHERE categorie_id = ?', [categorie_id]);
+    return rows;
+};
 
 //criar novo produto
 async function createProduct(product) {
@@ -20,9 +25,9 @@ async function createProduct(product) {
 }
 
 //alterar um produto
-async function updateProduct(id, product) {
+async function updateProduct(categorie_id, product) {
     const query = 'UPDATE products SET name = ?, price = ? WHERE product_id = ?';
-    const [result] = await pool.query(query, [product.name, product.price, id]);
+    const [result] = await pool.query(query, [product.name, product.price, categorie_id]);
     return result.affectedRows; // retorna o numero de colunas mudadas
 }
 
@@ -36,6 +41,7 @@ async function deleteProduct(id) {
 module.exports = {
     getAllProducts,
     getProductById,
+    getProductsFromCategorie,
     createProduct,
     updateProduct,
     deleteProduct

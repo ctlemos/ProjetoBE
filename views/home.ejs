@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+<body>
+    <main>
+        <h1>Olga Lemos</h1>
+
+        <ul>
+            <% categories.forEach(categorie => { %>
+
+                <li>
+                    <a href="/categorie/<%= categorie.categorie_id %>">
+                   
+                        <%= categorie.name %>
+
+                    </a>
+                </li>
+
+            <% }) %>
+        </ul>
+    </main>
+</body>
+</html>

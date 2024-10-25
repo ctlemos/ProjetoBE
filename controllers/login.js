@@ -22,7 +22,6 @@ router.post("/", async (request, response) => {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
-   
     // encontrar user por email
     const user = await findUserByEmail(login.email);
 
