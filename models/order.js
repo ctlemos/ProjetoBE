@@ -2,7 +2,7 @@ const pool = require('./connection');
 
 // mostrar todas as encomendas
 async function getAllOrders() {
-    return pool.query('SELECT order_id, user_id AS userId, order_date AS orderDate FROM orders');
+    return pool.query('SELECT order_id, user_id AS userId, total_price AS totalPrice, order_date AS orderDate FROM orders');
 }
 
 // encontrar encomenda por ID
@@ -11,8 +11,10 @@ async function getOrderById(orderId) {
 }
 
 // crirar nova encomenda
-async function insertOrder(userId) {
-    const [orderResult] = await pool.execute('INSERT INTO orders (user_id) VALUES (?)', [userId]);
+async function insertOrder(userId, totalPrice) {
+    const [orderResult] = await pool.execute(
+        'INSERT INTO orders (user_id, total_price, order_date) VALUES (?, ?, NOW())', [userId, totalPrice]
+    );
     return orderResult.insertId;
 }
 

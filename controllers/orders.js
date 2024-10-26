@@ -61,9 +61,11 @@ router.get("/:id", auth, async (request, response) => {
     }
 });
 
-//criar nova encomenda
-router.post("/", auth, async (request, response) => {
+// criar nova encomenda
+router.post("/checkout", auth, async (request, response) => {
     const order = request.body;
+
+    order.user = request.payload;
 
     try {
         await validateOrder.validateAsync(order);
@@ -71,16 +73,30 @@ router.post("/", auth, async (request, response) => {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
-    order.user = request.payload;
+    
+    let totalOrderPrice = 0;
+    let connection;
 
     try {
-        const connection = await pool.getConnection();
+        connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        // inserir encomenda
-        const orderId = await insertOrder(order.user.user_id);
+        // calcular o total da encomenda e vald¡idar o preço dos produtos
+        for (const product of order.products) {
+            const [productData] = await getProductPrice(product.productId);
 
-        // inserir detalhes da encomenda
+            if (productData.length > 0) {
+                const priceEach = productData[0].price;
+                totalOrderPrice += priceEach * product.quantity; // calcular o total por produto
+            } else {
+                throw new Error(`Product with ID ${product.productId} not found`);
+            }
+        }
+
+        // inserir encomenda na `order` table com o preçpo total
+        const orderId = await insertOrder(order.user.user_id, totalOrderPrice);
+
+        // inserir cada produto na `order_details` table
         for (const product of order.products) {
             const [productData] = await getProductPrice(product.productId);
 
@@ -90,12 +106,17 @@ router.post("/", auth, async (request, response) => {
             }
         }
 
+        // iniciar transação
         await connection.commit();
         connection.release();
 
-        return response.status(202).send({ id: orderId, ...order });
+        return response.status(202).send({ id: orderId, ...order, totalPrice: totalOrderPrice });
+
     } catch (err) {
-        console.error(err);
+        if (connection) await connection.rollback();
+        if (connection) connection.release();
+
+        console.error("Error processing order:", err.message);
         return response.status(500).send({ "message": "Internal Server Error" });
     }
 });

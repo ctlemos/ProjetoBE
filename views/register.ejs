@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.querySelector("form");
+
+            form.addEventListener("submit", e => {
+                e.preventDefault();
+
+                const { name, last_name, password, nif, email, phone, address, postal_code, city } = form;
+
+                fetch("/api/users", {
+                    method: "POST",
+                    headers: { "Content-Type":"application/json" },
+                    body: `{
+                        "name":"${ name.value }",
+                        "last_name":"${ last_name.value }",
+                        "password":"${ password.value }",
+                        "nif":"${ nif.value }",
+                        "email":"${ email.value }",
+                        "phone":"{ ${phone.value} }",
+                        "address":"${ address.value }",
+                        "postal_code":"${ postal_code.value }",
+                        "city":"${ city.value }"
+                    }`
+                })
+                .then(response => response.json())
+                .then(result => {
+                    window.location.href = "/login";
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <main>
+        <h1>Criar Conta</h1>
+        <form method="post" action="/api/users">
+            <div>
+                <label>
+                    Nome:
+                    <input type="text" name="name" minlength="3" maxlength="255" required>
+                </label>
+            </div>
+            <div>
+                <label>
+                    Apelido:
+                    <input type="text" name="last_name" minlength="3" maxlength="255" required>
+                </label>
+            </div> 
+            <div>
+                <label>
+                    Password:
+                    <input type="password" name="password" minlength="8" maxlength="1000" required>
+                </label>
+            </div>
+            <div>
+                <label>
+                    NIF:
+                    <input type="text" name="nif" minlength="9" maxlength="9" required>
+                </label>
+            </div>
+            <div>
+                <label>
+                    Email:
+                    <input type="email" name="email" required>
+                </label>
+            </div>
+            <div>
+                <label>
+                    Telemóvel:
+                    <input type="text" name="phone" minlength="9" maxlength="14" required>
+                </label>
+            </div>
+            <div>
+                <label>
+                    Morada:
+                    <input type="text" name="address" minlength="3" maxlength="255" required>
+                </label>
+            </div>
+            <div>
+                <label>
+                    Código Postal:
+                    <input type="text" name="postal-code" minlength="8" maxlength="8" required>
+                </label>
+            </div>
+            <div>
+                <label>
+                    Cidade:
+                    <input type="text" name="city" minlength="3" max="40" required>
+                </label>
+            </div>
+
+            <div>
+                <button type="submit">Criar</button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

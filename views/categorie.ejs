@@ -3,27 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products: <%= categorie.name  %></title>
+    <title>Products: <%= categorie.name %></title>
+    <script>
+        function updateGrandTotal() {
+            let grandTotal = 0;
+            document.querySelectorAll('.product-item').forEach((item, index) => {
+                const price = parseFloat(item.dataset.price);
+                const quantity = parseInt(document.getElementById(`quantity-${index}`).value) || 0;
+                grandTotal += price * quantity;
+            });
+            document.getElementById('grand-total').textContent = `${grandTotal.toFixed(2)} €`;
+        }
+
+        //coleta os produtos selecionados e quantidades e chama updateGrandTotal() para mostrar preço final 
+        function collectCartData() {
+            const cartData = [];
+            document.querySelectorAll('.product-item').forEach((item, index) => {
+                const productId = item.dataset.id;
+                const quantity = parseInt(document.getElementById(`quantity-${index}`).value) || 0;
+                if (quantity > 0) {
+                    cartData.push({ productId, quantity });
+                }
+            });
+            
+            //calcular o total e incluir no request
+            const totalPrice = updateGrandTotal();
+
+            fetch('/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ products: cartData, totalPrice: totalPrice })
+            })
+            .then(response => {
+                // Check if the response is OK (status code 200-299)
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json(); // Parse response as JSON if status is OK
+                })
+                .then(data => {
+                    alert("Pedido realizado com sucesso!");
+                    window.location.href = "/confirmation"; // Redirect to a confirmation page
+                })
+                .catch(error => {
+                    console.error('Error during checkout:', error);
+                    alert("Erro ao realizar pedido.");
+                });
+
+        }
+    </script>
 </head>
 <body>
     <main>
-        <h1><%= products.name %></h1>  
+        <header>
+            <h1><%= categorie.name %></h1>  
+            <p><%= categorie.description %></p>
+        </header>
         
-        
-        <% products.forEach(product => { %>
+        <section>
+            <div>
+                <% products.forEach((product, index) => { %>
+                    <li class="product-item" data-price="<%= product.price %>" data-id="<%= product.id %>">
+                        <strong>Nome:</strong> <%= product.name %><br>
+                        <strong>Preço:</strong> <%= product.price %> €<br>
+                        
+                        <label for="quantity-<%= index %>">Quantidade:</label>
+                        <input type="number" id="quantity-<%= index %>" min="1" value="0" 
+                               oninput="updateGrandTotal()">
+                    </li>
+                <% }) %>
+            </div>
+        </section> 
 
-            <li>
-               
-                <%= product.name %>
-                <%= product.price %> €
+        <section>
+            <h2>Total a Pagar: <span id="grand-total">0.00 €</span></h2>
+        </section>
 
-            </li>
-
-        <% }) %>
-
-        <a href="/">Voltar</a>
-
-        <!-- quando tem = é um echo -->
+        <!-- Checkout Button -->
+        <button onclick="collectCartData()">Checkout</button>
+        <button><a href="/">Voltar</a></button>
     </main>
+
+    <script>window.onload = updateGrandTotal;</script>
 </body>
 </html>

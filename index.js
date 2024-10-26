@@ -19,7 +19,7 @@ app.use("/api/users", controllerUsers);
 app.use("/api/orders", controllerOrders);
 app.use("/api/login", controllerLogin);
 
-
+//home page
 app.get("/", async (request, response) => {
 
     try {
@@ -31,6 +31,7 @@ app.get("/", async (request, response) => {
     }
 });
 
+//categorias + produtos page
 app.get("/categorie/:id", async (request, response) => {
     
     try {
@@ -49,6 +50,10 @@ app.get("/categorie/:id", async (request, response) => {
     }
 });
 
+//registo page
+app.get("/register", async (request, response) => {
+    return response.render("register.ejs");
+}); 
 
 
 app.listen(process.env.SERVER_PORT);

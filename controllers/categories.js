@@ -27,6 +27,12 @@ const validateCategorie = joi.object({
             'number.integer': 'Parent ID must be an integer.',
             'number.positive': 'Parent ID must be a positive number.',
             'number.max': 'Parent ID exceeds the allowed limit.',
+        }),
+    description: joi.string().min(3).max(255).optional()
+        .messages({
+            'string.base': 'Description must be a string.',
+            'string.min': 'Description must be at least 1 character long.',
+            'string.max': 'Description must be less than 255 characters long.',
         })
 });
 

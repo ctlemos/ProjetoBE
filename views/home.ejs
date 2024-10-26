@@ -4,24 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.querySelector("form");
+
+            form.addEventListener("submit", e => { e.preventDefault();
+
+                const { password, email } = form;
+
+                fetch("/api/login", {
+                     method: "POST",
+                    headers: { "Content-Type":"application/json" },
+                    body: `{
+                        "password":"${ password.value }",
+                        "email":"${ email.value }"
+                    }`
+                })
+                .then(response => response.json())
+                .then(result => {
+                    localStorage["user_token"] = result.token;
+                    window.location.href = "/";
+                 });
+            });
+        });
+    </script>
 </head>
 <body>
     <main>
-        <h1>Olga Lemos</h1>
+        <header>
+            <h1>Olga Lemos</h1>
+            
+            <nav>
+                <li> <a href="/register">Criar conta</a></li>
+            </nav>
+            
+            <div>
+                <h2>Login</h2>
+                    <form method="post" action="/api/login">
+                        <div>
+                            <label>Email</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        <div>
+                            <label>Password</label>
+                            <input type="password" name="password" minlength="8" maxlength="1000" required>
+                        </div>
+                        <div>
+                            <button type="submit">Login</button>
+                        </div>
+                    </form>
+            </div>
+        </header>
 
         <ul>
             <% categories.forEach(categorie => { %>
 
                 <li>
-                    <a href="/categorie/<%= categorie.categorie_id %>">
-                   
-                        <%= categorie.name %>
 
+                    <a href="/categorie/<%= categorie.categorie_id %>">
+                        <%= categorie.name %>
                     </a>
+                    
                 </li>
 
             <% }) %>
         </ul>
+
+        <footer>footer</footer>
     </main>
 </body>
 </html>
