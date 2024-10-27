@@ -9,8 +9,9 @@ const controllerProducts = require("./controllers/products");
 const controllerUsers = require("./controllers/users");
 const controllerOrders = require("./controllers/orders");
 const controllerLogin = require("./controllers/login");
+const controllerCart = require("./controllers/cart")
 
-app.set("view engine", "eja"); //definir template engine 
+app.set("view engine", "ejs"); //definir template engine 
 app.use(express.json()); //configurar express para carregar middleware e lidar om o http body 
 
 app.use("/api/categories", controllerCategories);
@@ -18,6 +19,8 @@ app.use("/api/products", controllerProducts);
 app.use("/api/users", controllerUsers);
 app.use("/api/orders", controllerOrders);
 app.use("/api/login", controllerLogin);
+app.use("/api/cart", controllerCart);
+
 
 //home page
 app.get("/", async (request, response) => {
@@ -50,9 +53,20 @@ app.get("/categorie/:id", async (request, response) => {
     }
 });
 
+//login page
+app.get("/login", async (request, response) => {
+    return response.render("login.ejs");
+});
+
 //registo page
 app.get("/register", async (request, response) => {
     return response.render("register.ejs");
+}); 
+
+//cart
+app.get("/cart", async (request, response) => {
+
+   return response.render("cart.ejs");
 }); 
 
 

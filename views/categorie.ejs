@@ -1,9 +1,147 @@
-<!DOCTYPE html>
-<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products: <%= categorie.name %></title>
+    <link rel="stylesheet" href="styles/products.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .navbar {
+            width: 100%;
+            background-color: #333;
+            position: fixed;
+            top: 0;
+            z-index: 10;
+        }
+
+        .nav-links ul {
+            list-style: none;
+            display: flex;
+            justify-content: flex-start;
+            padding: 1rem;
+        }
+
+        .nav-links ul li {
+            margin-right: 1rem;
+        }
+
+        .nav-links ul li a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        /* titulo + descrição */
+        .title-container {
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .title {
+            font-size: 2rem;
+            padding: 1rem 0;
+        }
+
+        .description {
+            margin-top: 0.5rem;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        /*produtos */
+        .product-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 2rem;
+            gap: 1.5rem;
+        }
+
+        .product-item.card {
+            background-color: #f4f4f4;
+            padding: 1.5rem;
+            width: 200px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .product-item.card strong {
+            font-size: 1rem;
+            color: #333;
+        }
+
+        /* img produto */
+        .product-image {
+            width: 100%;
+            height: auto;
+            margin: 1rem 0;
+            border-radius: 5px;
+        }
+
+        /* butões */
+        .product-item.card input[type="number"] {
+            margin: 0.5rem 0;
+            width: 60px;
+            padding: 0.3rem;
+        }
+
+        .product-item.card button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .product-item.card button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+</head>
+<body>
+    <main> 
+        <header class="navbar">
+            <nav class="nav-links">
+                <ul>
+                    <li><a href="/">Voltar</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <div class="title-container">   
+            <h1 class="title"><%= categorie.name %></h1>  
+            <p class="description"><%= categorie.description %></p>
+        </div>
+
+        <section class="product-list">
+            <% products.forEach((product, index) => { %>
+                <li class="product-item card" data-price="<%= product.price %>" data-id="<%= product.id %>">
+                    <strong>Nome:</strong> <%= product.name %><br>
+                    <strong>Preço:</strong> <%= product.price %> €<br>
+                    
+                    <img src="https://blog.bancadoramon.com.br/wp-content/uploads/2023/10/ceia-de-natal-1.jpg" alt="<%= product.name %>" class="product-image">
+                    
+                    <label for="quantity-<%= index %>">Quantidade:</label>
+                    <input type="number" id="quantity-<%= index %>" min="1" value="0" oninput="updateGrandTotal()">
+                    
+                    <button onclick="collectCartData()">Adicionar ao Carrinho</button>
+                </li>
+            <% }) %>
+        </section>
+    </main>
+    <script>window.onload = updateGrandTotal;</script>
+
     <script>
         function updateGrandTotal() {
             let grandTotal = 0;
@@ -14,8 +152,7 @@
             });
             document.getElementById('grand-total').textContent = `${grandTotal.toFixed(2)} €`;
         }
-
-        //coleta os produtos selecionados e quantidades e chama updateGrandTotal() para mostrar preço final 
+        
         function collectCartData() {
             const cartData = [];
             document.querySelectorAll('.product-item').forEach((item, index) => {
@@ -25,65 +162,28 @@
                     cartData.push({ productId, quantity });
                 }
             });
-            
-            //calcular o total e incluir no request
-            const totalPrice = updateGrandTotal();
 
+            const totalPrice = updateGrandTotal();
             fetch('/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ products: cartData, totalPrice: totalPrice })
             })
             .then(response => {
-                // Check if the response is OK (status code 200-299)
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                return response.json(); // Parse response as JSON if status is OK
+                return response.json(); 
                 })
                 .then(data => {
                     alert("Pedido realizado com sucesso!");
-                    window.location.href = "/confirmation"; // Redirect to a confirmation page
+                    window.location.href = "/confirmation";
                 })
                 .catch(error => {
                     console.error('Error during checkout:', error);
                     alert("Erro ao realizar pedido.");
                 });
-
         }
     </script>
-</head>
-<body>
-    <main>
-        <header>
-            <h1><%= categorie.name %></h1>  
-            <p><%= categorie.description %></p>
-        </header>
-        
-        <section>
-            <div>
-                <% products.forEach((product, index) => { %>
-                    <li class="product-item" data-price="<%= product.price %>" data-id="<%= product.id %>">
-                        <strong>Nome:</strong> <%= product.name %><br>
-                        <strong>Preço:</strong> <%= product.price %> €<br>
-                        
-                        <label for="quantity-<%= index %>">Quantidade:</label>
-                        <input type="number" id="quantity-<%= index %>" min="1" value="0" 
-                               oninput="updateGrandTotal()">
-                    </li>
-                <% }) %>
-            </div>
-        </section> 
-
-        <section>
-            <h2>Total a Pagar: <span id="grand-total">0.00 €</span></h2>
-        </section>
-
-        <!-- Checkout Button -->
-        <button onclick="collectCartData()">Checkout</button>
-        <button><a href="/">Voltar</a></button>
-    </main>
-
-    <script>window.onload = updateGrandTotal;</script>
 </body>
 </html>

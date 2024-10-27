@@ -40,7 +40,6 @@ router.get("/", auth, async (request, response) => {
     }
 });
 
-//mostrar encomendas por ID
 router.get("/:id", auth, async (request, response) => {
     try {
         const [order] = await getOrderById(request.params.id);
@@ -61,11 +60,9 @@ router.get("/:id", auth, async (request, response) => {
     }
 });
 
-// criar nova encomenda
-router.post("/checkout", auth, async (request, response) => {
+//criar nova encomenda 
+router.post("/", auth, async (request, response) => {
     const order = request.body;
-
-    order.user = request.payload;
 
     try {
         await validateOrder.validateAsync(order);
@@ -73,30 +70,16 @@ router.post("/checkout", auth, async (request, response) => {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
-    
-    let totalOrderPrice = 0;
-    let connection;
+    order.user = request.payload;
 
     try {
-        connection = await pool.getConnection();
+        const connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        // calcular o total da encomenda e vald¡idar o preço dos produtos
-        for (const product of order.products) {
-            const [productData] = await getProductPrice(product.productId);
+        // inserir encomenda com o total
+        const orderId = await insertOrder(order.user.user_id, order.totalPrice);
 
-            if (productData.length > 0) {
-                const priceEach = productData[0].price;
-                totalOrderPrice += priceEach * product.quantity; // calcular o total por produto
-            } else {
-                throw new Error(`Product with ID ${product.productId} not found`);
-            }
-        }
-
-        // inserir encomenda na `order` table com o preçpo total
-        const orderId = await insertOrder(order.user.user_id, totalOrderPrice);
-
-        // inserir cada produto na `order_details` table
+        // inserir detalhes da encomenda 
         for (const product of order.products) {
             const [productData] = await getProductPrice(product.productId);
 
@@ -106,17 +89,12 @@ router.post("/checkout", auth, async (request, response) => {
             }
         }
 
-        // iniciar transação
         await connection.commit();
         connection.release();
 
-        return response.status(202).send({ id: orderId, ...order, totalPrice: totalOrderPrice });
-
+        return response.status(202).send({ id: orderId, ...order });
     } catch (err) {
-        if (connection) await connection.rollback();
-        if (connection) connection.release();
-
-        console.error("Error processing order:", err.message);
+        console.error(err);
         return response.status(500).send({ "message": "Internal Server Error" });
     }
 });

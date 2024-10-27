@@ -8,6 +8,7 @@ const {
     updateCategorie,
     deleteCategorie
 } = require("../models/categorie");
+const getProductById = require("../models/product");
 
 const router = express.Router();
 
@@ -35,6 +36,36 @@ const validateCategorie = joi.object({
             'string.max': 'Description must be less than 255 characters long.',
         })
 });
+
+
+
+
+// Render a specific category view with products and cart information
+router.get("/view/:id", async (request, response) => {
+    try {
+        // Fetch category details
+        const categorie = await getCategorieById(request.params.id);
+        
+        if (!categorie) {
+            return response.status(404).send({ "message": "Categorie not found" });
+        }
+
+        // Fetch products related to the category
+        const products = await getProductsByCategoryId(request.params.id); // Ensure this function is implemented in your product model
+
+        // Fetch cart products from session or default to an empty array if none exist
+        const cartProducts = request.session.cartProducts || [];
+
+        // Render the `categorie.ejs` view with category, products, and cart data
+        response.render("categorie", { categorie, products, cartProducts });
+    } catch (err) {
+        console.error("Error displaying category page:", err.message);
+        response.status(500).send({ "message": "Internal Server Error" });
+    }
+});
+
+
+
 
 // ver todos as categorias
 router.get("/", async (request, response) => {

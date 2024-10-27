@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registar</title>
+    <title>Login</title>
     <style>
         * {
             margin: 0;
@@ -43,11 +43,11 @@
         }
 
         .title {
-            font-size: 2rem;
+            font-size: 1.8rem;
             padding: 1rem 0;
         }
 
-        /* Form  */
+        /* Form */
         .form-container {
             display: flex;
             justify-content: center;
@@ -111,50 +111,21 @@
         </header>
 
         <div class="title-container">
-            <h1 class="title">Criar Conta</h1>
+            <h2 class="title">Login</h2>
         </div>
 
         <div class="form-container">
-            <form method="post" action="/api/users">
+            <form method="post" action="/api/login">
                 <div class="form-group">
-                    <label>Nome:</label>
-                    <input type="text" name="name" minlength="3" maxlength="255" required>
-                </div>
-                <div class="form-group">
-                    <label>Apelido:</label>
-                    <input type="text" name="last_name" minlength="3" maxlength="255" required>
-                </div> 
-                <div class="form-group">
-                    <label>Password:</label>
-                    <input type="password" name="password" minlength="8" maxlength="1000" required>
-                </div>
-                <div class="form-group">
-                    <label>NIF:</label>
-                    <input type="text" name="nif" minlength="9" maxlength="9" required>
-                </div>
-                <div class="form-group">
-                    <label>Email:</label>
+                    <label>Email</label>
                     <input type="email" name="email" required>
                 </div>
                 <div class="form-group">
-                    <label>Telemóvel:</label>
-                    <input type="text" name="phone" minlength="9" maxlength="14" required>
+                    <label>Password</label>
+                    <input type="password" name="password" minlength="8" maxlength="1000" required>
                 </div>
                 <div class="form-group">
-                    <label>Morada:</label>
-                    <input type="text" name="address" minlength="3" maxlength="255" required>
-                </div>
-                <div class="form-group">
-                    <label>Código Postal:</label>
-                    <input type="text" name="postal_code" minlength="8" maxlength="8" required>
-                </div>
-                <div class="form-group">
-                    <label>Cidade:</label>
-                    <input type="text" name="city" minlength="3" maxlength="40" required>
-                </div>
-
-                <div class="form-group">
-                    <button type="submit" class="submit-btn">Criar</button>
+                    <button type="submit" class="submit-btn">Login</button>
                 </div>
             </form>
         </div>
@@ -164,32 +135,23 @@
         document.addEventListener("DOMContentLoaded", () => {
             const form = document.querySelector("form");
 
-            form.addEventListener("submit", e => {
-                e.preventDefault();
+            form.addEventListener("submit", e => { e.preventDefault();
 
-                const { name, last_name, password, nif, email, phone, address, postal_code, city } = form;
+                const { password, email } = form;
 
-                fetch("/api/users", {
-                    method: "POST",
+                fetch("/api/login", {
+                     method: "POST",
                     headers: { "Content-Type":"application/json" },
                     body: `{
-                        "name":"${ name.value }",
-                        "last_name":"${ last_name.value }",
                         "password":"${ password.value }",
-                        "nif":"${ nif.value }",
-                        "email":"${ email.value }",
-                        "phone":"${ phone.value }",
-                        "address":"${ address.value }",
-                        "postal_code":"${ postal_code.value }",
-                        "city":"${ city.value }"
+                        "email":"${ email.value }"
                     }`
                 })
                 .then(response => response.json())
                 .then(result => {
-                    console.log("User created:", result);
+                    localStorage["user_token"] = result.token;
                     window.location.href = "/";
-                })
-                .catch(error => console.error("Error creating user:", error));
+                 });
             });
         });
     </script>

@@ -12,9 +12,7 @@ async function getOrderById(orderId) {
 
 // crirar nova encomenda
 async function insertOrder(userId, totalPrice) {
-    const [orderResult] = await pool.execute(
-        'INSERT INTO orders (user_id, total_price, order_date) VALUES (?, ?, NOW())', [userId, totalPrice]
-    );
+    const [orderResult] = await pool.execute('INSERT INTO orders (user_id, total_price) VALUES (?, ?)', [userId, totalPrice]);
     return orderResult.insertId;
 }
 
