@@ -5,94 +5,179 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;700&family=Dancing+Script:wght@400..700&display=swap');
         * {
             margin: 0;
             padding: 0;
+            border: none;
             box-sizing: border-box;
         }
 
-        .navbar {
-            width: 100%;
-            background-color: #333;
-            position: fixed;
-            top: 0;
+        body {
+            width: 100vw;
+            font-family: "Cormorant Garamond", serif; 
+            font-weight: 300;
+            background: rgb(238,174,202);
+            background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
         }
 
-        .nav-links ul {
-            list-style: none;
+        /* navbar */
+        .navbar {
+            position: fixed;
+            width: 100%;
+            top: 0;
+            padding: 1rem 2rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .navbar__wrapper {
             display: flex;
             justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .navbar__menu ul li {
+            display: inline-block;
+        }
+
+        li a {
+            list-style: none;
+	        text-decoration: none;
             padding: 1rem;
+            color: #000;
+            font-size: 1rem;
+            text-transform: uppercase;
         }
 
-        .nav-links ul li {
-            margin-left: 1rem;
-        }
-
-        .nav-links ul li a {
-            color: #fff;
-            text-decoration: none;
+        a:hover {
+            color: palevioletred;
         }
 
         .title {
+            font-family: "Dancing Script", cursive;
+	        font-size: 5rem;
+	        font-weight: lighter;
             text-align: center;
             margin-top: 5rem; 
-            font-size: 2rem;
             padding: 1rem 0;
         }
 
-        .card-container {
+        /* cards */
+         .cards_wrapper {
+            margin-bottom: 7rem;
+        }
+
+        .card_container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            margin: 2rem;
+            margin: 2rem 4rem 2rem 4rem; 
         }
-
+ 
         .card {
-            background-color: #f4f4f4;
+            box-sizing: border-box;
+            width: 200px;
+            height: 100px;
             margin: 1rem;
             padding: 1.5rem;
-            width: 200px;
+            background: rgba(217, 217, 217, 0.58);
+            border: 1px solid white;
+            box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
+            backdrop-filter: blur(6px);
+            border-radius: 17px;
             text-align: center;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            font-weight: bolder;
+            color: black;
         }
-        
-        .card a {
+
+        .card:hover {
+            border: 1px solid black;
+            transform: scale(1.05);
+        }
+
+        .card:active {
+            transform: scale(0.95) rotateZ(1.7deg);
+        }
+
+         .card a {
             text-decoration: none;
             color: #333;
             font-weight: bold;
+            font-family: "Cormorant Garamond", serif;
+  	        font-style: normal;
+            text-transform: uppercase;
+            font-size: 1rem;
+        } 
+
+       /* footer */
+        .hr {
+            height: 1px;
+            width: 35rem;
+            background: #402412;
+            opacity: 1;
+        }
+
+       .footer_container{
+            width: 100%;
+            position: relative;
+            margin-top: 5rem;
         }
 
         footer {
-            text-align: center;
-            padding: 1rem;
-            background-color: #333;
-            color: #fff;
-            position: fixed;
             width: 100%;
-            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 0;
         }
 
+        .footer_info {
+            margin: 1em;
+            color: #402412;
+            text-align: center;
+            line-height: 25px;
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            .hr {
+                width: 20rem;
+            }
+            .footer_info {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
     <main>
         <div class="navbar">
-            <nav class="nav-links">
-                <ul>
-                    <li><a href="/register">Criar conta</a></li>
-                    <li><a href="/login">Login</a></li>
-                </ul>
-            </nav>
+            <div class="navbar__wrapper">
+                <nav class="navbar__menu">
+                    <ul>
+                        <li><a href="/register">Criar conta</a></li>
+                        <li><a href="/login">Login</a></li>
+                    </ul>
+                </nav>
+            </div>
         </div>
 
-        <div class="title-wrapper">
+        <div class="title_wrapper">
             <h1 class="title">Olga Lemos</h1>
         </div>
 
-        <div class="cards">
-            <ul class="card-container">
+
+        <div class="cards_wrapper">
+            <ul class="card_container">
                 <% categories.forEach(categorie => { %>
                     <button class="card">
                         <a href="/categorie/<%= categorie.categorie_id %>">
@@ -103,7 +188,18 @@
             </ul>
         </div>
 
-        <footer>footer</footer>
+
+        <div class='footer_container'>
+            <footer>
+                <hr class="hr"/>
+                <p class='footer_info'>© Copyright 2024 Olga Lemos - Parabéns | <small>Todos os direitos reservados</small></p>
+                <p class='footer_info'>
+                    Rua dos Namorados, nº 242 3750-722 — Recardães <br> 
+                    Aveiro - Portugal <br> 
+                    +351 933 251 197 (Custo chamada para rede fixa nacional)
+                </p>
+            </footer> 
+        </div>     
     </main>
 </body>
 </html>

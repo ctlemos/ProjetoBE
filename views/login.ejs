@@ -5,53 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;700');
         * {
             margin: 0;
             padding: 0;
+            border: none;
             box-sizing: border-box;
         }
 
-        /* Navbar */
-        .navbar {
-            width: 100%;
-            background-color: #333;
+        body {
+            width: 100vw;
+            font-family: "Cormorant Garamond", serif; 
+            font-weight: 300;
+            font-style: normal;
+            background: rgb(238,174,202);
+            background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
+        }
+
+        /* navbar */
+         .navbar {
             position: fixed;
+            width: 100%;
             top: 0;
-            z-index: 10;
+            left: 0;
+            padding: 1rem 2rem;
+            backdrop-filter: blur(4px);
         }
 
-        .nav-links ul {
-            list-style: none;
+        .navbar__wrapper {
             display: flex;
-            justify-content: flex-start;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .navbar__menu ul li {
+            display: inline-block;
+        }
+
+        li a {
+            list-style: none;
+	        text-decoration: none;
             padding: 1rem;
+            color: #000;
+            font-size: 1rem;
+            text-transform: uppercase;
         }
 
-        .nav-links ul li {
-            margin-right: 1rem;
-        }
-
-        .nav-links ul li a {
-            color: #fff;
-            text-decoration: none;
+        a:hover {
+            color: palevioletred;
         }
 
         /* titulo */
-        .title-container {
+        .title_container {
             text-align: center;
             margin-top: 4rem;
         }
 
         .title {
+            font-family: "Cormorant Garamond", serif;
+  	        font-style: normal;
+            font-weight: lighter;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             font-size: 1.8rem;
             padding: 1rem 0;
         }
 
         /* Form */
-        .form-container {
+        .form_container {
             display: flex;
             justify-content: center;
             margin-top: 2rem;
+            margin-bottom: 5rem;
         }
 
         form {
@@ -63,18 +88,18 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .form-group {
+        .form_group {
             margin-bottom: 1.5rem;
         }
 
-        .form-group label {
+        .form_group label {
             display: block;
             font-size: 1rem;
             color: #333;
             margin-bottom: 0.5rem;
         }
 
-        .form-group input {
+        .form_group input {
             width: 100%;
             padding: 0.5rem;
             border: 1px solid #ccc;
@@ -98,37 +123,95 @@
         .submit-btn:hover {
             background-color: #0056b3;
         }
+
+        /* footer */
+        .hr {
+            height: 1px;
+            width: 35rem;
+            background: #402412;
+            opacity: 1;
+        }
+
+       .footer_container{
+            width: 100%;
+            position: relative;
+            margin-top: 2rem;
+        }
+
+        footer {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 0;
+        }
+
+        .footer_info {
+            margin: 1em;
+            color: #402412;
+            text-align: center;
+            line-height: 25px;
+        }
+
+        /* RWD */
+        @media (max-width: 600px) {
+            .hr {
+                width: 20rem;
+            }
+            .footer_info {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
     <main>
-        <header class="navbar">
-            <nav class="nav-links">
-                <ul>
-                    <li><a href="/">Voltar</a></li>
-                </ul>
-            </nav>
-        </header>
+        <div class="navbar">
+            <div class="navbar__wrapper">
+                <nav class="navbar__menu">
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/register">Criar conta</a></li>
+                        <li><a href="/login">Login</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
 
-        <div class="title-container">
+        <div class="title_container">
             <h2 class="title">Login</h2>
         </div>
 
-        <div class="form-container">
+        <div class="form_container">
             <form method="post" action="/api/login">
-                <div class="form-group">
+                <div class="form_group">
                     <label>Email</label>
                     <input type="email" name="email" required>
                 </div>
-                <div class="form-group">
+                <div class="form_group">
                     <label>Password</label>
                     <input type="password" name="password" minlength="8" maxlength="1000" required>
                 </div>
-                <div class="form-group">
+                <div class="form_group">
                     <button type="submit" class="submit-btn">Login</button>
                 </div>
             </form>
         </div>
+
+        <div class='footer_container'>
+            <footer>
+                <hr class="hr"/>
+                <p class='footer_info'>© Copyright 2024 Olga Lemos - Parabéns | <small>Todos os direitos reservados</small></p>
+                <p class='footer_info'>
+                    Rua dos Namorados, nº 242 3750-722 — Recardães <br> 
+                    Aveiro - Portugal <br> 
+                    +351 933 251 197 (Custo chamada para rede fixa nacional)
+                </p>
+            </footer> 
+        </div>         
     </main>
 
     <script>
