@@ -38,9 +38,7 @@ const validateCategorie = joi.object({
 });
 
 
-
-
-// Render a specific category view with products and cart information
+// mostrar a categoria especifica com produtos e cart info
 router.get("/view/:id", async (request, response) => {
     try {
         // Fetch category details
@@ -50,21 +48,19 @@ router.get("/view/:id", async (request, response) => {
             return response.status(404).send({ "message": "Categorie not found" });
         }
 
-        // Fetch products related to the category
-        const products = await getProductsByCategoryId(request.params.id); // Ensure this function is implemented in your product model
+        // buscar produtos por categoria_id
+        const products = await getProductsByCategoryId(request.params.id); 
 
-        // Fetch cart products from session or default to an empty array if none exist
+        // mostrar produtos do carrinho, da sessão, ou default nulo
         const cartProducts = request.session.cartProducts || [];
 
-        // Render the `categorie.ejs` view with category, products, and cart data
+        // mostrar `categorie.ejs` com categoria, produtos e cart info/data 
         response.render("categorie", { categorie, products, cartProducts });
     } catch (err) {
         console.error("Error displaying category page:", err.message);
         response.status(500).send({ "message": "Internal Server Error" });
     }
 });
-
-
 
 
 // ver todos as categorias

@@ -115,6 +115,23 @@
             font-size: 1rem;
         } 
 
+        /* buttons */
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #7b9acc;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 400;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #658bb5;
+        }
+
        /* footer */
         .hr {
             height: 1px;
@@ -166,6 +183,7 @@
                     <ul>
                         <li><a href="/register">Criar conta</a></li>
                         <li><a href="/login">Login</a></li>
+                        <button id="logoutButton">Logout</button>
                     </ul>
                 </nav>
             </div>
@@ -175,6 +193,17 @@
             <h1 class="title">Olga Lemos</h1>
         </div>
 
+        <!-- <div class='about__main'>
+            <div> 
+              <h1 class="about_title">Sobre</h1>
+            </div>
+          
+            <section class='about__main_wrapper-info'>
+              <div class='about__main_info-text'>
+                <p>Com uma habilidade culinária que transcende gerações, Olga Lemos é uma verdadeira mestre na arte da pastelaria. Há mais de três décadas, tem encantado paladares com seus bolos e doces meticulosamente elaborados, além de criar momentos memoráveis em eventos especiais. Originária de uma pequena cidade onde a tradição da boa comida é valorizada, Olga começou sua jornada na cozinha desde cedo, inspirada pela mãe, que lhe ensinou os segredos dos sabores autênticos e da paixão pela culinária. Ainda no 12º ano, surgiu uma oportunidade de tirar um curso de culinária, na Pateira de Fermentelos, onde essa paixão transformou-se numa carreira sólida e repleta de sucesso.</p>
+              </div>
+            </section> 
+          </div> -->
 
         <div class="cards_wrapper">
             <ul class="card_container">
@@ -201,5 +230,29 @@
             </footer> 
         </div>     
     </main>
+<script>
+    document.getElementById("logoutButton").addEventListener("click", async () => {
+    console.log(localStorage.getItem("user_token"));
+        // enviar POST request
+        const response = fetch("/logout", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("user_token"),
+                "Content-Type": "application/json"
+            } 
+        }) .then(response => response.json()).then( 
+            result => {
+                if (result.message) {
+                    // limpa o token do localStorage
+                    localStorage.removeItem("user_token");
+                    // redireciona oara a login page
+                    window.location.href = "/login";
+                } else {
+                    alert("Logout failed. Please try again.");
+                } 
+            }
+        );
+    });
+</script>
 </body>
 </html>

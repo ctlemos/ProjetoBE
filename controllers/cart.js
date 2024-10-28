@@ -1,56 +1,87 @@
-// cartController.js
 const express = require("express");
+const jwt = require("jsonwebtoken");
 const router = express.Router();
 const auth = require("../middleware/auth");
 const { insertOrder, insertOrderDetails } = require("../models/order");
 
-// Add item to cart
-router.post("/add-to-cart", auth, (request, response) => {
-    const { productId, quantity, price, name } = request.body;
+const secretKey = process.env.JWT_SECRET_KEY;
 
-    // Initialize the cart if it doesn't exist
-    if (!request.session.cartProducts) {
-        request.session.cartProducts = [];
-    }
+function reissueToken(payload) {
+    return jwt.sign(payload, secretKey);
+}
 
-    // Check if product is already in the cart to update quantity
-    const existingProduct = request.session.cartProducts.find(p => p.id === productId);
-    if (existingProduct) {
-        existingProduct.quantity += quantity;
-    } else {
-        // Add the new product
-        request.session.cartProducts.push({ id: productId, name, price, quantity });
-    }
+// Adicionar ao carrinho
+router.post("/add-to-cart", auth, (req, res) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(" ")[1];
+    const secretKey = process.env.JWT_SECRET_KEY;
 
-    response.send({ message: "Product added to cart successfully" });
+    if (!token) return res.status(401).send({ message: "Access Denied: No Token Provided" });
+
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) return res.status(403).send({ message: "Invalid Token" });
+
+        let cartProducts = decoded.cartProducts || [];
+
+        // Loop pelos produtos para adicionar ao cartProducts
+        req.body.products.forEach(newProduct => {
+            const existingProduct = cartProducts.find(p => p.productId === newProduct.productId);
+
+            if (existingProduct) {
+                existingProduct.quantity += newProduct.quantity;
+            } else {
+                cartProducts.push(newProduct); // incluir productId
+            }
+        });
+
+        // Atualizar e reemitir o token com cartProducts modificados
+        const newPayload = { ...decoded, cartProducts };
+        const newToken = jwt.sign(newPayload, secretKey);
+
+        res.send({ success: true, token: newToken });
+    });
 });
 
-// Display cart
-router.get("/cart", auth, (request, response) => {
-    const cartProducts = request.session.cartProducts || [];
-    const total = cartProducts.reduce((sum, product) => sum + product.price * product.quantity, 0);
-    response.render("cart", { cartProducts, total });
+// mostrar Cart
+router.get("/cart", auth, (req, res) => {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    console.log(authHeader)
+
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) return res.status(403).send("Invalid Token");
+
+        const cartProducts = decoded.cartProducts || [];
+        const total = cartProducts.reduce((sum, product) => sum + product.price * product.quantity, 0);
+
+        res.render("cart", { cartProducts, total });
+    });
 });
 
 // Checkout
-router.post("/checkout", auth, async (request, response) => {
-    const cartProducts = request.session.cartProducts || [];
-    const total = cartProducts.reduce((sum, product) => sum + product.price * product.quantity, 0);
+router.post("/checkout", auth, async (req, res) => {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
 
-    try {
-        // Insert new order and order details
-        const orderId = await insertOrder(request.payload.user_id, total);
-        for (const product of cartProducts) {
-            await insertOrderDetails(orderId, product.id, product.quantity, product.price);
+    jwt.verify(token, secretKey, async (err, decoded) => {
+        if (err) return res.status(403).send("Invalid Token");
+
+        const cartProducts = decoded.cartProducts || [];
+        const total = cartProducts.reduce((sum, product) => sum + product.price * product.quantity, 0);
+
+        try {
+            const orderId = await insertOrder(decoded.user_id, total);
+            for (const product of cartProducts) {
+                await insertOrderDetails(orderId, product.productId, product.quantity, product.price);
+            }
+
+            const newToken = reissueToken({ ...decoded, cartProducts: [] });
+            res.status(200).send({ message: "Checkout successful!", token: newToken });
+        } catch (err) {
+            console.error("Error during checkout:", err);
+            res.status(500).send({ message: "Internal Server Error" });
         }
-
-        // Clear the cart after checkout
-        request.session.cartProducts = [];
-        response.status(200).send({ message: "Checkout successful!" });
-    } catch (err) {
-        console.error("Error during checkout:", err);
-        response.status(500).send({ message: "Internal Server Error" });
-    }
+    });
 });
 
 module.exports = router;

@@ -59,7 +59,7 @@ const validateUser = (user) => {
             'string.empty': 'Postal code must not be empty.',
             'any.required': 'Postal code is required.',
         }),
-        city: joi.string().min(2).max(255).required().messages({
+        city: joi.string().min(2).max(40).required().messages({
             'string.min': 'City must be at least 2 characters long.',
             'string.max': 'City must be less than 255 characters long.',
             'string.empty': 'City must not be empty.',

@@ -57,11 +57,16 @@
         /* titulo + descrição */
         .title_container {
             text-align: center;
-            margin-top: 4rem;
+            margin-top: 6rem;
         }
 
         .title {
-            font-size: 2rem;
+            font-family: "Cormorant Garamond", serif;
+  	        font-style: normal;
+            font-weight: lighter;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.8rem;
             padding: 1rem 0;
         }
 
@@ -76,6 +81,7 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
+            margin-top: 3rem;
             padding: 2rem;
             gap: 1.5rem;
         }
@@ -127,6 +133,21 @@
             background-color: #0056b3;
         }
 
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #7b9acc;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 400;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #658bb5;
+        }
         
       /* footer */
       .hr {
@@ -180,13 +201,15 @@
                         <li><a href="/">Home</a></li>
                         <li><a href="/register">Criar conta</a></li>
                         <li><a href="/login">Login</a></li>
+                        <button id="logoutButton">Logout</button>
+                        <li><button onclick="viewCart()">Ver Carrinho</button></li>
                     </ul>
                 </nav>
             </div>
         </div>
 
         <div class="title_container">   
-            <h1 class="title"><%= categorie.name %></h1>  
+            <h2 class="title"><%= categorie.name %></h2>  
             <p class="description"><%= categorie.description %></p>
         </div>
 
@@ -199,7 +222,7 @@
                     <img src="https://blog.bancadoramon.com.br/wp-content/uploads/2023/10/ceia-de-natal-1.jpg" alt="<%= product.name %>" class="product-image">
                     
                     <label for="quantity-<%= index %>">Quantidade:</label>
-                    <input type="number" id="quantity-<%= index %>" min="1" value="0" oninput="updateGrandTotal()">
+                    <input type="number" id="quantity-<%= index %>" min="1" value="0" >
                     
                     <button onclick="collectCartData()">Adicionar ao Carrinho</button>
                 </li>
@@ -218,50 +241,119 @@
             </footer> 
         </div>         
     </main>
-    <script>window.onload = updateGrandTotal;</script>
 
-    <script>
-        function updateGrandTotal() {
-            let grandTotal = 0;
-            document.querySelectorAll('.product-item').forEach((item, index) => {
-                const price = parseFloat(item.dataset.price);
-                const quantity = parseInt(document.getElementById(`quantity-${index}`).value) || 0;
-                grandTotal += price * quantity;
-            });
-            document.getElementById('grand-total').textContent = `${grandTotal.toFixed(2)} €`;
-        }
-        
+<script>     
         function collectCartData() {
-            const cartData = [];
-            document.querySelectorAll('.product-item').forEach((item, index) => {
-                const productId = item.dataset.id;
-                const quantity = parseInt(document.getElementById(`quantity-${index}`).value) || 0;
-                if (quantity > 0) {
-                    cartData.push({ productId, quantity });
-                }
-            });
+        const cartData = [];
+        document.querySelectorAll('.product-item').forEach((item, index) => {
+            const productId = item.dataset.id; // Make sure this matches the HTML attribute
+            const name = item.dataset.name;
+            const price = parseFloat(item.dataset.price);
+            const quantity = parseInt(document.getElementById(`quantity-${index}`).value) || 0;
+            if (quantity > 0) {
+                cartData.push({ productId, name, price, quantity });
+            }
+        });
 
-            const totalPrice = updateGrandTotal();
-            fetch('/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ products: cartData, totalPrice: totalPrice })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+        const token = localStorage.getItem('user_token');
+        fetch('/api/cart/add-to-cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ products: cartData })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Products added to cart successfully!");
+                localStorage.setItem('user_token', data.token); // Update the token with the cart data
+            } else {
+                alert("Failed to add products to cart.");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Failed to add products to cart.");
+        });
+    }
+        function viewCart() {
+            const token = localStorage.getItem('user_token');
+            if (!token) {
+                alert("Please log in to view your cart.");
+                return;
+            }
+
+            fetch('/cart', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
                 }
-                return response.json(); 
+            })
+            .then(response => response.text()) // Assume the server returns HTML content
+            .then(html => {
+                document.body.innerHTML = html; // Render cart page content in the current page
+            })
+            .catch(error => {
+                console.error("Error accessing cart:", error);
+                alert("Unable to access cart.");
+            });
+        }
+        function checkout() {
+                console.log("Checkout function called"); // Log to confirm function execution
+                const token = localStorage.getItem('user_token');
+                if (!token) {
+                    alert("Please log in to view your cart.");
+                    return;
+                }
+    
+                fetch('/api/cart/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Checkout failed');
+                    return response.json();
                 })
                 .then(data => {
-                    alert("Pedido realizado com sucesso!");
                     window.location.href = "/confirmation";
                 })
                 .catch(error => {
-                    console.error('Error during checkout:', error);
+                    console.error("Error during checkout:", error);
                     alert("Erro ao realizar pedido.");
                 });
-        }
-    </script>
+            }
+</script>
+
+<!-- logout -->
+<script>
+    document.getElementById("logoutButton").addEventListener("click", async () => {
+    console.log(localStorage.getItem("user_token"));
+        // enviar POST request
+        const response = fetch("/logout", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("user_token"),
+                "Content-Type": "application/json"
+            } 
+        }) .then(response => response.json()).then( 
+            result => {
+                if (result.message) {
+                    // limpa o token do localStorage
+                    localStorage.removeItem("user_token");
+                    // redireciona oara a login page
+                    window.location.href = "/login";
+                } else {
+                    alert("Logout failed. Please try again.");
+                } 
+            }
+        );
+    });
+</script>
 </body>
 </html>

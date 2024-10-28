@@ -124,6 +124,22 @@
             background-color: #0056b3;
         }
 
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #7b9acc;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 400;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #658bb5;
+        }
+
         /* footer */
         .hr {
             height: 1px;
@@ -176,6 +192,7 @@
                         <li><a href="/">Home</a></li>
                         <li><a href="/register">Criar conta</a></li>
                         <li><a href="/login">Login</a></li>
+                        <button id="logoutButton">Logout</button>
                     </ul>
                 </nav>
             </div>
@@ -214,29 +231,55 @@
         </div>         
     </main>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const form = document.querySelector("form");
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector("form");
 
-            form.addEventListener("submit", e => { e.preventDefault();
+    form.addEventListener("submit", e => { e.preventDefault();
 
-                const { password, email } = form;
+        const { password, email } = form;
 
-                fetch("/api/login", {
-                     method: "POST",
-                    headers: { "Content-Type":"application/json" },
-                    body: `{
-                        "password":"${ password.value }",
-                        "email":"${ email.value }"
-                    }`
-                })
-                .then(response => response.json())
-                .then(result => {
-                    localStorage["user_token"] = result.token;
-                    window.location.href = "/";
-                 });
-            });
-        });
-    </script>
+        fetch("/api/login", {
+             method: "POST",
+            headers: { "Content-Type":"application/json" },
+            body: `{
+                "password":"${ password.value }",
+                "email":"${ email.value }"
+            }`
+        })
+        .then(response => response.json())
+        .then(result => {
+            localStorage["user_token"] = result.token;
+            window.location.href = "/";
+         });
+    });
+});
+</script>
+
+<!-- logout -->
+<script>
+    document.getElementById("logoutButton").addEventListener("click", async () => {
+    console.log(localStorage.getItem("user_token"));
+        // enviar POST request
+        const response = fetch("/logout", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + localStorage.getItem("user_token"),
+                "Content-Type": "application/json"
+            } 
+        }) .then(response => response.json()).then( 
+            result => {
+                if (result.message) {
+                    // limpa o token do localStorage
+                    localStorage.removeItem("user_token");
+                    // redireciona oara a login page
+                    window.location.href = "/login";
+                } else {
+                    alert("Logout failed. Please try again.");
+                } 
+            }
+        );
+    });
+</script>
 </body>
 </html>

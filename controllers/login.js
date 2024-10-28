@@ -41,6 +41,7 @@ router.post("/", async (request, response) => {
         "user_id": user.user_id, 
         "email": user.email,
         "is_admin": user.is_admin
+       // "cartProducts": []
     };
 
     const secretKey = process.env.JWT_SECRET_KEY;
