@@ -4,168 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registar</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;700');
-        * {
-            margin: 0;
-            padding: 0;
-            border: none;
-            box-sizing: border-box;
-        }
-
-        body {
-            width: 100vw;
-            font-family: "Cormorant Garamond", serif; 
-            font-weight: 300;
-            font-style: normal;
-            background: rgb(238,174,202);
-            background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
-        }
-
-         /* navbar */
-         .navbar {
-            position: fixed;
-            width: 100%;
-            top: 0;
-            left: 0;
-            padding: 1rem 2rem;
-            backdrop-filter: blur(4px);
-        }
-
-        .navbar__wrapper {
-            display: flex;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .navbar__menu ul li {
-            display: inline-block;
-        }
-
-        li a {
-            list-style: none;
-	        text-decoration: none;
-            padding: 1rem;
-            color: #000;
-            font-size: 1rem;
-            text-transform: uppercase;
-        }
-
-        a:hover {
-            color: palevioletred;
-        }
-
-        /* titulo */
-        .title_container {
-            text-align: center;
-            margin-top: 4rem;
-        }
-
-        .title {
-            font-family: "Cormorant Garamond", serif;
-  	        font-style: normal;
-            font-weight: lighter;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 1.8rem;
-            padding: 1rem 0;
-        }
-
-        /* Form  */
-        .form_container {
-            display: flex;
-            justify-content: center;
-            margin-top: 2rem;
-            margin-bottom: 5rem;
-        }
-
-        form {
-            width: 100%;
-            max-width: 400px;
-            padding: 2rem;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .form_group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form_group label {
-            display: block;
-            font-size: 1rem;
-            color: #333;
-            margin-bottom: 0.5rem;
-        }
-
-        .form_group input {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-
-        /* Button */
-        .submit-btn {
-            width: 100%;
-            padding: 0.7rem;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-        .submit-btn:hover {
-            background-color: #0056b3;
-        }
-
-       /* footer */
-       .hr {
-            height: 1px;
-            width: 35rem;
-            background: #402412;
-            opacity: 1;
-        }
-
-       .footer_container{
-            width: 100%;
-            position: relative;
-            margin-top: 2rem;
-        }
-
-        footer {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem 0;
-        }
-
-        .footer_info {
-            margin: 1em;
-            color: #402412;
-            text-align: center;
-            line-height: 25px;
-        }
-
-        /* RWD */
-        @media (max-width: 600px) {
-            .hr {
-                width: 20rem;
-            }
-            .footer_info {
-                display: flex;
-                flex-wrap: wrap;
-                align-items: center;
-                justify-content: center;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="../public/styles/index.css">
 </head>
 <body>
     <main>
@@ -174,8 +13,6 @@
                 <nav class="navbar__menu">
                     <ul>
                         <li><a href="/">Home</a></li>
-                        <li><a href="/register">Criar conta</a></li>
-                        <li><a href="/login">Login</a></li>
                     </ul>
                 </nav>
             </div>
@@ -243,38 +80,7 @@
         </div>         
     </main>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const form = document.querySelector("form");
-
-            form.addEventListener("submit", e => {
-                e.preventDefault();
-
-                const { name, last_name, password, nif, email, phone, address, postal_code, city } = form;
-
-                fetch("/api/users", {
-                    method: "POST",
-                    headers: { "Content-Type":"application/json" },
-                    body: `{
-                        "name":"${ name.value }",
-                        "last_name":"${ last_name.value }",
-                        "password":"${ password.value }",
-                        "nif":"${ nif.value }",
-                        "email":"${ email.value }",
-                        "phone":"${ phone.value }",
-                        "address":"${ address.value }",
-                        "postal_code":"${ postal_code.value }",
-                        "city":"${ city.value }"
-                    }`
-                })
-                .then(response => response.json())
-                .then(result => {
-                    console.log("User created:", result);
-                    window.location.href = "/";
-                })
-                .catch(error => console.error("Error creating user:", error));
-            });
-        });
-    </script>
+<!-- registo -->
+<script src="../public/js/register.js"></script>
 </body>
 </html>

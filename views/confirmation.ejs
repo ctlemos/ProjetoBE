@@ -4,121 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Confirmation</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;700&family=Dancing+Script:wght@400..700&display=swap');
-        * {
-            margin: 0;
-            padding: 0;
-            border: none;
-            box-sizing: border-box;
-        }
-
-        body {
-            width: 100vw;
-            font-family: "Cormorant Garamond", serif; 
-            font-weight: 300;
-            background: rgb(238,174,202);
-            background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
-        }
-
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #7b9acc;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 400;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #658bb5;
-        }
-
-        li a {
-            list-style: none;
-	        text-decoration: none;
-            padding: 1rem;
-            color: #000;
-            font-size: 1rem;
-            text-transform: uppercase;
-        }
-
-        a:hover {
-            color: palevioletred;
-        }
-
-        /* titulo */
-        .title_warpper {
-            text-align: center;
-            margin-top: 4rem;
-        }
-
-        .title {
-            font-family: "Cormorant Garamond", serif;
-  	        font-style: normal;
-            font-weight: lighter;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            font-size: 1.8rem;
-            padding: 1rem 0;
-        }
-
-        /* main */
-        .info_wrapper {
-            margin-bottom: 7rem;
-        }
-        .info {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 2rem 4rem 2rem 4rem; 
-        }
-
-        /* footer */
-        .hr {
-            height: 1px;
-            width: 35rem;
-            background: #402412;
-            opacity: 1;
-        }
-
-       .footer_container{
-            width: 100%;
-            position: relative;
-            margin-top: 2rem;
-        }
-
-        footer {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem 0;
-        }
-
-        .footer_info {
-            margin: 1em;
-            color: #402412;
-            text-align: center;
-            line-height: 25px;
-        }
-
-        /* RWD */
-        @media (max-width: 600px) {
-            .hr {
-                width: 20rem;
-            }
-            .footer_info {
-                display: flex;
-                flex-wrap: wrap;
-                align-items: center;
-                justify-content: center;
-            }
-        }
-    </style>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="stylesheet" href="../public/styles/index.css">
 </head>
 <body>
     <main>
@@ -127,8 +14,8 @@
                 <nav class="navbar__menu">
                     <ul>
                         <li><a href="/register">Criar conta</a></li>
-                        <li><a href="/login">Login</a></li>
-                        <button id="logoutButton">Logout</button>
+                        <button id="logoutButton" style="display: none;">Logout</button>
+                        <button id="loginButton" style="display: none;"><a href="/login">Login</a></button> 
                     </ul>
                 </nav>
             </div>
@@ -157,5 +44,10 @@
             </footer> 
         </div> 
     </main>
+
+<!-- login+logout btn function -->
+<script src="../public/js/logBtn.js"></script>
+<!-- logout -->
+<script src="../public/js/logout.js"></script>
 </body>
 </html>

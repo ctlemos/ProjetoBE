@@ -4,176 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;700&family=Dancing+Script:wght@400..700&display=swap');
-        * {
-            margin: 0;
-            padding: 0;
-            border: none;
-            box-sizing: border-box;
-        }
-
-        body {
-            width: 100vw;
-            font-family: "Cormorant Garamond", serif; 
-            font-weight: 300;
-            background: rgb(238,174,202);
-            background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
-        }
-
-        /* navbar */
-        .navbar {
-            position: fixed;
-            width: 100%;
-            top: 0;
-            padding: 1rem 2rem;
-            backdrop-filter: blur(4px);
-        }
-
-        .navbar__wrapper {
-            display: flex;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .navbar__menu ul li {
-            display: inline-block;
-        }
-
-        li a {
-            list-style: none;
-	        text-decoration: none;
-            padding: 1rem;
-            color: #000;
-            font-size: 1rem;
-            text-transform: uppercase;
-        }
-
-        a:hover {
-            color: palevioletred;
-        }
-
-        .title {
-            font-family: "Dancing Script", cursive;
-	        font-size: 5rem;
-	        font-weight: lighter;
-            text-align: center;
-            margin-top: 5rem; 
-            padding: 1rem 0;
-        }
-
-        /* cards */
-         .cards_wrapper {
-            margin-bottom: 7rem;
-        }
-
-        .card_container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 2rem 4rem 2rem 4rem; 
-        }
- 
-        .card {
-            box-sizing: border-box;
-            width: 200px;
-            height: 100px;
-            margin: 1rem;
-            padding: 1.5rem;
-            background: rgba(217, 217, 217, 0.58);
-            border: 1px solid white;
-            box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
-            backdrop-filter: blur(6px);
-            border-radius: 17px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.5s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            user-select: none;
-            font-weight: bolder;
-            color: black;
-        }
-
-        .card:hover {
-            border: 1px solid black;
-            transform: scale(1.05);
-        }
-
-        .card:active {
-            transform: scale(0.95) rotateZ(1.7deg);
-        }
-
-         .card a {
-            text-decoration: none;
-            color: #333;
-            font-weight: bold;
-            font-family: "Cormorant Garamond", serif;
-  	        font-style: normal;
-            text-transform: uppercase;
-            font-size: 1rem;
-        } 
-
-        /* buttons */
-        button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #7b9acc;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 400;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #658bb5;
-        }
-
-       /* footer */
-        .hr {
-            height: 1px;
-            width: 35rem;
-            background: #402412;
-            opacity: 1;
-        }
-
-       .footer_container{
-            width: 100%;
-            position: relative;
-            margin-top: 5rem;
-        }
-
-        footer {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 1rem 0;
-        }
-
-        .footer_info {
-            margin: 1em;
-            color: #402412;
-            text-align: center;
-            line-height: 25px;
-        }
-
-        /* RWD */
-        @media (max-width: 600px) {
-            .hr {
-                width: 20rem;
-            }
-            .footer_info {
-                display: flex;
-                flex-wrap: wrap;
-                align-items: center;
-                justify-content: center;
-            }
-        }
-    </style>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="stylesheet" href="../public/styles/index.css">
 </head>
 <body>
     <main>
@@ -181,9 +13,9 @@
             <div class="navbar__wrapper">
                 <nav class="navbar__menu">
                     <ul>
-                        <li><a href="/register">Criar conta</a></li>
-                        <li><a href="/login">Login</a></li>
-                        <button id="logoutButton">Logout</button>
+                        <button id="logoutButton" style="display: none;">Logout</button>
+                        <button id="loginButton" style="display: none;"><a href="/login">Login</a></button>
+                        <li><button onclick="viewCart()">Ver Carrinho</button></li>
                     </ul>
                 </nav>
             </div>
@@ -192,18 +24,6 @@
         <div class="title_wrapper">
             <h1 class="title">Olga Lemos</h1>
         </div>
-
-        <!-- <div class='about__main'>
-            <div> 
-              <h1 class="about_title">Sobre</h1>
-            </div>
-          
-            <section class='about__main_wrapper-info'>
-              <div class='about__main_info-text'>
-                <p>Com uma habilidade culinária que transcende gerações, Olga Lemos é uma verdadeira mestre na arte da pastelaria. Há mais de três décadas, tem encantado paladares com seus bolos e doces meticulosamente elaborados, além de criar momentos memoráveis em eventos especiais. Originária de uma pequena cidade onde a tradição da boa comida é valorizada, Olga começou sua jornada na cozinha desde cedo, inspirada pela mãe, que lhe ensinou os segredos dos sabores autênticos e da paixão pela culinária. Ainda no 12º ano, surgiu uma oportunidade de tirar um curso de culinária, na Pateira de Fermentelos, onde essa paixão transformou-se numa carreira sólida e repleta de sucesso.</p>
-              </div>
-            </section> 
-          </div> -->
 
         <div class="cards_wrapper">
             <ul class="card_container">
@@ -217,7 +37,6 @@
             </ul>
         </div>
 
-
         <div class='footer_container'>
             <footer>
                 <hr class="hr"/>
@@ -230,29 +49,12 @@
             </footer> 
         </div>     
     </main>
-<script>
-    document.getElementById("logoutButton").addEventListener("click", async () => {
-    console.log(localStorage.getItem("user_token"));
-        // enviar POST request
-        const response = fetch("/logout", {
-            method: "POST",
-            headers: {
-                "Authorization": "Bearer " + localStorage.getItem("user_token"),
-                "Content-Type": "application/json"
-            } 
-        }) .then(response => response.json()).then( 
-            result => {
-                if (result.message) {
-                    // limpa o token do localStorage
-                    localStorage.removeItem("user_token");
-                    // redireciona oara a login page
-                    window.location.href = "/login";
-                } else {
-                    alert("Logout failed. Please try again.");
-                } 
-            }
-        );
-    });
-</script>
+
+<!-- login+logout btn function -->
+<script src="../public/js/logBtn.js"></script>
+<!-- logout -->        
+<script src="../public/js/logout.js"></script>
+<!-- mostrar carrinho -->
+<script src="../public/js/cartData.js"></script>
 </body>
 </html>
