@@ -17,7 +17,7 @@ const validateProduct = joi.object({
     price: joi.number().min(1).max(9999).required()
 });
 
-// ver todos os produtos
+// Ver todos os produtos
 router.get("/", async (request, response) => {
     try {
         const products = await getAllProducts();
@@ -28,7 +28,7 @@ router.get("/", async (request, response) => {
     }
 });
 
-// mostrar um produto em especifico por ID
+// Mostrar um produto em especifico por ID
 router.get("/:id", async (request, response) => {
     try {
         const product = await getProductById(request.params.id);
@@ -44,24 +44,24 @@ router.get("/:id", async (request, response) => {
     }
 });
 
-// criar um novo produto
+// Criar um novo produto
 router.post("/", auth, async (request, response) => {
     
-    //só o admin é que pode criar produtos
+    // Só o admin é que pode criar produtos
     if (!request.payload.is_admin) {
         return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
     }
 
     const newProduct = request.body;
 
-    // validar detalhes do produto
+    // Validar detalhes do produto
     try {
         await validateProduct.validateAsync(newProduct);
     } catch (err) {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
-    // criar produto
+    // Criar produto
     try {
         const productId = await createProduct(newProduct);
         return response.status(201).send({ id: productId, ...newProduct });
@@ -71,24 +71,24 @@ router.post("/", auth, async (request, response) => {
     }
 });
 
-// atualizar um produto por ID
+// Atualizar um produto por ID
 router.put("/:id", auth, async (request, response) => {
 
-    //só o admin é que pode alterar um produto
+    // Só o admin é que pode alterar um produto
     if (!request.payload.is_admin) {
         return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
     }
 
     const updatedProduct = request.body;
 
-    // validar os novos detalhes
+    // Validar os novos detalhes
     try {
         await validateProduct.validateAsync(updatedProduct);
     } catch (err) {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
-    // atualizar produto
+    // Atualizar produto
     try {
         const affectedRows = await updateProduct(request.params.id, updatedProduct);
         if (affectedRows === 0) {
@@ -101,10 +101,10 @@ router.put("/:id", auth, async (request, response) => {
     }
 });
 
-// apagar um produto por ID
+// Apagar um produto por ID
 router.delete("/:id", auth, async (request, response) => {
 
-    //só o amdin é que pode apagar um produto
+    // Só o amdin é que pode apagar um produto
     if (!request.payload.is_admin) {
         return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
     }

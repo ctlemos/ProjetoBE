@@ -23,10 +23,10 @@ const validateOrder = joi.object({
     )
 });
 
-//mostrar todas as encomendas
+// Mostrar todas as encomendas
 router.get("/", auth, async (request, response) => {
     try {
-        // só o admin é que pode ver todas as encomendas
+        // Só o admin é que pode ver todas as encomendas
         if (!request.payload.is_admin) {
             return response.status(403).send({ "message": "You do not have access to this action" });
         }
@@ -40,6 +40,7 @@ router.get("/", auth, async (request, response) => {
     }
 });
 
+// Mostrar encomenda por ID
 router.get("/:id", auth, async (request, response) => {
     try {
         const [order] = await getOrderById(request.params.id);
@@ -48,7 +49,7 @@ router.get("/:id", auth, async (request, response) => {
             return response.status(404).send({ "message": "Not Found" });
         }
         
-        //so um user que fez a encomenda e o admin é que podem ver a encomenda
+        // Só um user que fez a encomenda e o admin é que podem ver a encomenda
         if(order[0].user_id != request.payload.user_id && !request.payload.is_admin){
             return response.status(403).send({"message":"You do not have access to this action"});
         }
@@ -60,13 +61,14 @@ router.get("/:id", auth, async (request, response) => {
     }
 });
 
-//criar nova encomenda 
+// Criar nova encomenda 
 router.post("/", auth, async (request, response) => {
     const order = request.body;
 
     try {
         await validateOrder.validateAsync(order);
     } catch (err) {
+        console.error("Validation error:", err);
         return response.status(400).send({ "message": err.details[0].message });
     }
 
@@ -76,13 +78,44 @@ router.post("/", auth, async (request, response) => {
         const connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        // inserir encomenda com o total
+        let totalPrice = 0;
+        
+        for (const product of order.products) {
+            try {
+                // Debugging
+                // console.log("Processing product:", product);
+
+                const [productData] = await getProductPrice(product.productId);
+
+                // Certeficar de que os dados estão corretos
+                if (!productData || productData.length === 0) {
+                    console.error(`Product ID ${product.productId} not found in database.`);
+                    return response.status(400).send({ "message": `Product ID ${product.productId} not found.` });
+                }
+
+                // Calcular o preço do produto
+                const priceEach = productData[0].price;
+                const totalProductPrice = priceEach * product.quantity;
+                totalPrice += totalProductPrice;
+
+                // Debugging
+                // console.log(`Product ID: ${product.productId}, Unit Price: ${priceEach}, Quantity: ${product.quantity}, Total Product Price: ${totalProductPrice}`);
+
+            } catch (error) {
+                console.error("Error fetching product price:", error);
+                return response.status(500).send({ "message": "Error fetching product price" });
+            }
+        }
+
+        // Mostrar o preço final 
+        console.log("Calculated Total Price for Order:", totalPrice);
+        order.totalPrice = totalPrice;
+
+        // Inserir encomenda com o preço final 
         const orderId = await insertOrder(order.user.user_id, order.totalPrice);
 
-        // inserir detalhes da encomenda 
         for (const product of order.products) {
             const [productData] = await getProductPrice(product.productId);
-
             if (productData.length > 0) {
                 const priceEach = productData[0].price;
                 await insertOrderDetails(orderId, product.productId, product.quantity, priceEach);
@@ -94,16 +127,16 @@ router.post("/", auth, async (request, response) => {
 
         return response.status(202).send({ id: orderId, ...order });
     } catch (err) {
-        console.error(err);
+        console.error("Error processing order:", err);
         return response.status(500).send({ "message": "Internal Server Error" });
     }
 });
 
-//editar ume encomenda por ID
+// Editar ume encomenda por ID
 router.put("/:id", auth, async (request, response) => {
     const order = request.body;
 
-    // validar pedido
+    // Validar pedido
     try {
         await validateOrder.validateAsync(order);
     } catch (err) {
@@ -112,13 +145,14 @@ router.put("/:id", auth, async (request, response) => {
 
     order.user = request.payload;
 
-    try { //procurar pela encomenda
+    try { 
+        // Procurar pela encomenda
         const [existingOrder] = await getOrderById(request.params.id);
         if (existingOrder.length === 0) {
             return response.status(404).send({ "message": "Not Found" });
         }
 
-        //so um user que criou a encomenda e o admin é que podem alterar a encomenda
+        // Só um user que criou a encomenda e o admin é que podem alterar a encomenda
         if(existingOrder[0].user_id != request.payload.user_id && !request.payload.is_admin){
             return response.status(403).send({"message":"You do not have access to this action"});
         }
@@ -126,10 +160,10 @@ router.put("/:id", auth, async (request, response) => {
         const connection = await pool.getConnection();
         await connection.beginTransaction();
 
-        // atualizar encomenda
+        // Atualizar encomenda
         await updateOrder(order.user.user_id, request.params.id);
 
-        // apagar produtos antigos e inserir novos
+        // Apagar produtos antigos e inserir novos
         await deleteOrderDetails(request.params.id);
         for (const product of order.products) {
             const [productData] = await getProductPrice(product.productId);
@@ -149,7 +183,7 @@ router.put("/:id", auth, async (request, response) => {
     }
 });
 
-//apagar encomenda por ID
+// Apagar encomenda por ID
 router.delete("/:id", auth, async (request, response) => {
     try {
         const [existingOrder] = await getOrderById(request.params.id);
@@ -158,7 +192,7 @@ router.delete("/:id", auth, async (request, response) => {
             return response.status(404).send({ "message": "Not Found" });
         }
 
-        //so um user autenticado e o admin é que podem apagar a encomenda
+        // Só um user autenticado e o admin é que podem apagar a encomenda
         if(existingOrder[0].user_id != request.payload.user_id && !request.payload.is_admin){
             return response.status(403).send({"message":"You do not have access to this action"});
         }

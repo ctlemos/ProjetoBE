@@ -2,7 +2,8 @@
 @import "categories.css";
 @import "login.css";
 @import "register.css";
-
+@import "cart.css";
+@import "confirmation.css";
 
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;700&family=Dancing+Script:wght@400..700&display=swap');
 
@@ -18,8 +19,26 @@ body {
     font-family: "Cormorant Garamond", serif; 
     font-weight: 300;
     font-style: normal;
+    color: #402412;
     background: rgb(238,174,202);
     background: radial-gradient(circle, rgba(238,174,202,1) 0%, rgba(148,187,233,1) 100%);
+}
+
+/* TÍTULOS */
+.title_wrapper {
+    text-align: center;
+    margin-top: 6rem;
+}
+
+.title {
+    font-family: "Cormorant Garamond", serif;
+    font-style: normal;
+    font-weight: lighter;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 1.8rem;
+    padding: 1rem 0;
+    color: #402412;
 }
 
 /* NAVBAR */
@@ -30,40 +49,58 @@ body {
     left: 0;
     padding: 1rem 2rem;
     backdrop-filter: blur(4px);
+    background-color: rgba(255, 255, 255, 0.208);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.029); 
+    z-index: 1000; 
 }
 
 .navbar__wrapper {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     flex-wrap: wrap;
+}
+
+.navbar__menu ul {
+    list-style: none; 
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 1rem; 
 }
 
 .navbar__menu ul li {
     display: inline-block;
-}
-
-li a {
-    list-style: none;
-    text-decoration: none;
-    padding: 1rem;
-    color: #000;
-    font-size: 1rem;
     text-transform: uppercase;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-top: 20px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
 }
 
-a:hover {
-    color: palevioletred;
+.navbar__menu ul li a, #logoutButton, #cartButton{
+    color: #402412;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s;
+}
+
+.navbar__menu ul li a:hover, #logoutButton:hover, #cartButton:hover {
+    color: #fff;
 }
 
 /* FOOTER */
 .hr {
     height: 1px;
     width: 35rem;
+    margin-bottom: 20px;
     background: #402412;
     opacity: 1;
 }
 
-.footer_container{
+.footer_wrapper{
     width: 100%;
     position: relative;
     margin-top: 5rem;
@@ -78,7 +115,7 @@ footer {
 }
 
 .footer_info {
-    margin: 1em;
+    padding: 5px;
     color: #402412;
     text-align: center;
     line-height: 25px;

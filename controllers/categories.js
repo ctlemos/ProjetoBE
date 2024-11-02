@@ -37,7 +37,6 @@ const validateCategorie = joi.object({
         })
 });
 
-
 // mostrar a categoria especifica com produtos e cart info
 router.get("/view/:id", async (request, response) => {
     try {
@@ -61,7 +60,6 @@ router.get("/view/:id", async (request, response) => {
         response.status(500).send({ "message": "Internal Server Error" });
     }
 });
-
 
 // ver todos as categorias
 router.get("/", async (request, response) => {

@@ -10,27 +10,44 @@ function reissueToken(payload) {
     return jwt.sign(payload, secretKey);
 }
 
+// mostrar carrinho
+router.get("/cart", auth, (request, response) => {
+    const authHeader = request.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    console.log(authHeader)
+
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) return response.status(403).send("Invalid Token");
+
+        const cartProducts = decoded.cartProducts || [];
+        const total = cartProducts.reduce((sum, product) => sum + product.price * product.quantity, 0);
+
+        response.render("cart", { cartProducts, total });
+    });
+});
+
 // Adicionar ao carrinho
-router.post("/add-to-cart", auth, (req, res) => {
-    const authHeader = req.headers['authorization'];
+router.post("/add-to-cart", auth, (request, response) => {
+    const authHeader = request.headers['authorization'];
     const token = authHeader && authHeader.split(" ")[1];
     const secretKey = process.env.JWT_SECRET_KEY;
 
-    if (!token) return res.status(401).send({ message: "Access Denied: No Token Provided" });
+    if (!token) return response.status(401).send({ message: "Access Denied: No Token Provided" });
 
     jwt.verify(token, secretKey, (err, decoded) => {
-        if (err) return res.status(403).send({ message: "Invalid Token" });
+        if (err) return response.status(403).send({ message: "Invalid Token" });
 
         let cartProducts = decoded.cartProducts || [];
 
         // Loop pelos produtos para adicionar ao cartProducts
-        req.body.products.forEach(newProduct => {
+        request.body.products.forEach(newProduct => {
             const existingProduct = cartProducts.find(p => p.productId === newProduct.productId);
 
             if (existingProduct) {
+                //atualizar total no cart
                 existingProduct.quantity += newProduct.quantity;
             } else {
-                cartProducts.push(newProduct); // incluir productId
+                cartProducts.push(newProduct);
             }
         });
 
@@ -38,33 +55,17 @@ router.post("/add-to-cart", auth, (req, res) => {
         const newPayload = { ...decoded, cartProducts };
         const newToken = jwt.sign(newPayload, secretKey);
 
-        res.send({ success: true, token: newToken });
-    });
-});
-
-// mostrar Cart
-router.get("/cart", auth, (req, res) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
-    console.log(authHeader)
-
-    jwt.verify(token, secretKey, (err, decoded) => {
-        if (err) return res.status(403).send("Invalid Token");
-
-        const cartProducts = decoded.cartProducts || [];
-        const total = cartProducts.reduce((sum, product) => sum + product.price * product.quantity, 0);
-
-        res.render("cart", { cartProducts, total });
+        response.send({ success: true, token: newToken });
     });
 });
 
 // Checkout
-router.post("/checkout", auth, async (req, res) => {
-    const authHeader = req.headers["authorization"];
+router.post("/checkout", auth, async (request, response) => {
+    const authHeader = request.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
 
     jwt.verify(token, secretKey, async (err, decoded) => {
-        if (err) return res.status(403).send("Invalid Token");
+        if (err) return response.status(403).send("Invalid Token");
 
         const cartProducts = decoded.cartProducts || [];
         const total = cartProducts.reduce((sum, product) => sum + product.price * product.quantity, 0);
@@ -76,12 +77,13 @@ router.post("/checkout", auth, async (req, res) => {
             }
 
             const newToken = reissueToken({ ...decoded, cartProducts: [] });
-            res.status(200).send({ message: "Checkout successful!", token: newToken });
+            response.status(200).send({ message: "Checkout successful!", token: newToken });
         } catch (err) {
             console.error("Error during checkout:", err);
-            res.status(500).send({ message: "Internal Server Error" });
+            response.status(500).send({ message: "Internal Server Error" });
         }
     });
 });
+
 
 module.exports = router;

@@ -18,7 +18,7 @@ const authenticateToken = (request, response, next) => {
 };
 
 router.post("/", authenticateToken, (request, response) => {
-    // limpar o token do client side remover o token do local storage)
+    // Limpar o token do client side remover o token do local storage)
     return response.status(200).send({ "message": "User logged out successfully" });
 });
 

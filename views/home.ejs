@@ -13,16 +13,18 @@
             <div class="navbar__wrapper">
                 <nav class="navbar__menu">
                     <ul>
-                        <button id="logoutButton" style="display: none;">Logout</button>
-                        <button id="loginButton" style="display: none;"><a href="/login">Login</a></button>
-                        <li><button onclick="viewCart()">Ver Carrinho</button></li>
+                        <li id="logoutButton" style="display: none;">Logout</li>
+                        <li id="loginButton" style="display: none;"><a href="/login">Login</a></li>
+                        <li id="register" style="display: none;"><a href="/register">Criar conta</a></li>
+                        <li id="profile" style="display: none;"><a href="/user">Perfil</a></li>
+                        <li id="cartButton" onclick="viewCart()">Ver Carrinho</li>
                     </ul>
                 </nav>
             </div>
         </div>
 
         <div class="title_wrapper">
-            <h1 class="title">Olga Lemos</h1>
+            <h1 class="home_title">Olga Lemos</h1>
         </div>
 
         <div class="cards_wrapper">
@@ -37,24 +39,23 @@
             </ul>
         </div>
 
-        <div class='footer_container'>
+        <div class='footer_wrapper'>
             <footer>
                 <hr class="hr"/>
                 <p class='footer_info'>© Copyright 2024 Olga Lemos - Parabéns | <small>Todos os direitos reservados</small></p>
                 <p class='footer_info'>
-                    Rua dos Namorados, nº 242 3750-722 — Recardães <br> 
-                    Aveiro - Portugal <br> 
+                    Rua dos Namorados, nº 242 3750-722 — Recardães, Aveiro - Portugal <br> 
                     +351 933 251 197 (Custo chamada para rede fixa nacional)
                 </p>
             </footer> 
         </div>     
     </main>
 
-<!-- login+logout btn function -->
+<!-- Login+logout btn function -->
 <script src="../public/js/logBtn.js"></script>
-<!-- logout -->        
+<!-- Logout -->        
 <script src="../public/js/logout.js"></script>
-<!-- mostrar carrinho -->
+<!-- Mostrar carrinho -->
 <script src="../public/js/cartData.js"></script>
 </body>
 </html>

@@ -12,7 +12,7 @@ const {
 
 const router = express.Router();
 
-//validationschema de criação de novo user
+// Validationschema de criação de novo user
 const validateUser = (user) => {
     const schema = joi.object({
         name: joi.string().min(3).max(255).required().messages({
@@ -69,9 +69,9 @@ const validateUser = (user) => {
     return schema.validate(user);
 };
 
-//mostrar todos os users
+// Mostrar todos os users
 router.get("/", auth, async (request, response) => {
-    //só o admin é que pode ver todos os users
+    // Só o admin é que pode ver todos os users
     if (!request.payload.is_admin) {
         return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
     }
@@ -85,7 +85,7 @@ router.get("/", auth, async (request, response) => {
     }
 });
 
-//mostrar user por ID
+// Mostrar user por ID
 router.get("/:id", auth, async (request, response) => {
     try {
         const user = await getUserById(request.params.id);
@@ -93,7 +93,7 @@ router.get("/:id", auth, async (request, response) => {
             return response.status(404).send({ message: "User Not Found" });
         }
 
-        //só o user autenticado e o admin é que ver os dados
+        // Só o user autenticado e o admin é que ver os dados
         if (user[0].user_id != request.payload.user_id && !request.payload.is_admin) {
             return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
         }
@@ -105,7 +105,7 @@ router.get("/:id", auth, async (request, response) => {
     }
 });
 
-//criar novo user
+// Criar novo user
 router.post("/", async (request, response) => {
     const newUser = request.body;
     const { error } = validateUser(newUser);
@@ -115,7 +115,7 @@ router.post("/", async (request, response) => {
     }
 
     try {
-        //hashing da password / encriptação
+        // Hashing da password / encriptação
         const salt = await bcrypt.genSalt(10);
         newUser.password = await bcrypt.hash(newUser.password, salt);
 
@@ -129,7 +129,7 @@ router.post("/", async (request, response) => {
     }
 });
 
-//editar user por ID
+// Editar user por ID
 router.put("/:id", auth, async (request, response) => {
     const updatedUser = request.body;
     const { error } = validateUser(updatedUser);
@@ -142,12 +142,12 @@ router.put("/:id", auth, async (request, response) => {
             return response.status(404).send({ message: "User Not Found" });
         }
 
-        //só o user autenticado e o admin é que podem modificar os dados
+        // Só o user autenticado e o admin é que podem modificar os dados
         if (existingUser[0].user_id != request.payload.user_id && !request.payload.is_admin) {
             return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
         }
 
-        //cria nova pass com hashing caso mude
+        // Cria nova pass com hashing caso mude
         let hashedPassword = existingUser[0].password;
         if (updatedUser.password) {
             const salt = await bcrypt.genSalt(10);
@@ -164,21 +164,21 @@ router.put("/:id", auth, async (request, response) => {
     }
 });
 
-//apagar user por ID
+// Apagar user por ID
 router.delete("/:id", auth, async (request, response) => {
     try {
-        // verificar se o user existe e se tem autenticação
+        // Verificar se o user existe e se tem autenticação
         const existingUser = await getUserById(request.params.id);
         if (existingUser.length === 0) {
             return response.status(404).send({ message: "User not found" });
         }
 
-        //só o user autenticado e o admin é que apagar os dados
+        // Só o user autenticado e o admin é que apagar os dados
         if (existingUser[0].user_id != request.payload.user_id && !request.payload.is_admin) {
             return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
         }
 
-        // se tiver autenticação apagar
+        // Se tiver autenticação apagar
         const [result] = await deleteUser(request.params.id);
         if (result.affectedRows === 0) {
             return response.status(404).send({ message: "User not found" });

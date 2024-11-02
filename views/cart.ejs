@@ -14,8 +14,8 @@
                 <nav class="navbar__menu">
                     <ul>
                         <li><a href="/">Home</a></li>
-                        <button id="logoutButton" style="display: none;">Logout</button>
-                        <button id="loginButton" style="display: none;"><a href="/login">Login</a></button>
+                        <li id="logoutButton" style="display: none;">Logout</li>
+                        <li id="loginButton" style="display: none;"><a href="/login">Login</a></li>
                     </ul>
                 </nav>
             </div>
@@ -25,38 +25,49 @@
             <h1 class="title">Carrinho de Compras</h1>
         </div>
         
-        <section>
-            <% if (cartProducts.length > 0) { %>
-                <ul>
-                    <% cartProducts.forEach((product, index) => { %>
-                        <li class="cart-item">
-                            <strong>Nome:</strong> <%= product.name %><br>
-                            <strong>Preço Unitário:</strong> <%= product.price %> €<br>
-                            <strong>Quantidade:</strong> <%= product.quantity %><br>
-                            <strong>Total:</strong> <%= (product.price * product.quantity).toFixed(2) %> €
-                        </li>
-                    <% }) %>
-                </ul>
-            <% } else { %>
-                <p>O seu carrinho está vazio.</p>
-            <% } %>
-        </section> 
+        <div class="cart_wrapper">
+            <section class="cart_info-wrapper">
+                <% if (cartProducts.length > 0) { %>
+                    <ul>
+                        <% cartProducts.forEach((product, index) => { %>
+                            <li class="cart-item">
+                                <strong>Nome:</strong> <%= product.name %><br>
+                                <strong>Preço Unitário:</strong> <%= product.price %> €<br>
+                                <strong>Quantidade:</strong> <%= product.quantity %><br>
+                                <strong>Total:</strong> <%= (product.price * product.quantity).toFixed(2) %> €
+                            </li>
+                        <% }) %>
+                    </ul>
+                <% } else { %>
+                    <p>O seu carrinho está vazio.</p>
+                <% } %>
+            </section> 
 
-        <section>
-            <h2>Total a Pagar: <span id="grand-total"><%= total.toFixed(2) %> €</span></h2>
-        </section>
-        
-        <button><a href="/">Voltar</a></button>
-        <button onclick="checkout()">Checkout</button>
+            <div class="total_info">
+                <h2>Total a Pagar: <span id="grand-total"><%= total.toFixed(2) %> €</span></h2>
+            </div>
+            
+            <div class="btn_wrapper">
+                <button class="backBtn"><a href="/">Voltar</a></button>
+                <button onclick="checkout()" class="checkoutBtn">Checkout</button>
+            </div>
+        </div>
 
+        <div class='footer_wrapper'>
+            <footer>
+                <hr class="hr"/>
+                <p class='footer_info'>© Copyright 2024 Olga Lemos - Parabéns | <small>Todos os direitos reservados</small></p>
+                <p class='footer_info'>
+                    Rua dos Namorados, nº 242 3750-722 — Recardães, Aveiro - Portugal <br> 
+                    +351 933 251 197 (Custo chamada para rede fixa nacional)
+                </p>
+            </footer> 
+        </div>
     </main>
 
-    
-<!-- mostrar carrinho -->
-<script src="../public/js/cartData.js"></script>
-<!-- login+logout btn funtion -->
-<script src="../public/js/logBtn.js"></script>
-<!-- lohout -->
-<script src="../public/js/logout.js"></script>
+    <!-- Login+logout btn function -->
+    <script src="../public/js/logBtn.js"></script>
+    <!-- Logout -->  
+    <script src="../public/js/logout.js"></script>
 </body>
 </html>

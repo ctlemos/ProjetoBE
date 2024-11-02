@@ -14,26 +14,26 @@
                 <nav class="navbar__menu">
                     <ul>
                         <li><a href="/">Home</a></li>
-                        <button id="logoutButton" style="display: none;">Logout</button>
-                        <button id="loginButton" style="display: none;"><a href="/login">Login</a></button>
-                        <li><button onclick="viewCart()">Ver Carrinho</button></li>
+                        <li id="logoutButton" style="display: none;">Logout</li>
+                        <li id="loginButton" style="display: none;"><a href="/login">Login</a></li>
+                        <li id="cartButton" onclick="viewCart()">Ver Carrinho</li>
                     </ul>
                 </nav>
             </div>
         </div>
 
-        <div class="title_container">   
+        <div class="title_wrapper">   
             <h2 class="title"><%= categorie.name %></h2>  
             <p class="description"><%= categorie.description %></p>
         </div>
 
         <section class="product-list">
             <% products.forEach((product, index) => { %>
-                <li class="product-item card" data-price="<%= product.price %>" data-id="<%= product.id %>">
+                <li class="product-item product_card" data-price="<%= product.price %>" data-id="<%= product.product_id %>" data-name="<%= product.name %>">
                     <strong>Nome:</strong> <%= product.name %><br>
                     <strong>Preço:</strong> <%= product.price %> €<br>
                     
-                    <img src="https://blog.bancadoramon.com.br/wp-content/uploads/2023/10/ceia-de-natal-1.jpg" alt="<%= product.name %>" class="product-image">
+                    <img src="https://blog.bancadoramon.com.br/wp-content/uploads/2023/10/ceia-de-natal-1.jpg" alt="<%= product.name %>" class="product_image">
                     
                     <label for="quantity-<%= index %>">Quantidade:</label>
                     <input type="number" id="quantity-<%= index %>" min="1" value="0" >
@@ -43,24 +43,116 @@
             <% }) %>
         </section> 
         
-        <div class='footer_container'>
+        <div class='footer_wrapper'>
             <footer>
                 <hr class="hr"/>
                 <p class='footer_info'>© Copyright 2024 Olga Lemos - Parabéns | <small>Todos os direitos reservados</small></p>
                 <p class='footer_info'>
-                    Rua dos Namorados, nº 242 3750-722 — Recardães <br> 
-                    Aveiro - Portugal <br> 
+                    Rua dos Namorados, nº 242 3750-722 — Recardães, Aveiro - Portugal <br> 
                     +351 933 251 197 (Custo chamada para rede fixa nacional)
                 </p>
             </footer> 
-        </div>         
+        </div>        
     </main>
 
-<!-- mostrar carrinho -->
-<script src="../public/js/cartData.js"></script>
-<!-- login+logout btn function -->
+
+<script>
+    function collectCartData() {
+        const cartData = [];
+        document.querySelectorAll('.product-item').forEach((item, index) => {
+            const productId = item.dataset.id; 
+            const name = item.dataset.name;
+            const price = parseFloat(item.dataset.price);
+            const quantity = parseInt(document.getElementById(`quantity-${index}`).value) || 0;
+            if (quantity > 0) {
+                cartData.push({ productId, name, price, quantity });
+            }
+        });
+
+        // Adicionar info do carrinho ao token
+        const token = localStorage.getItem('user_token');
+            fetch('/api/cart/add-to-cart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ products: cartData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Products added to cart successfully!");
+                    localStorage.setItem('user_token', data.token); // Atualizar o token com produtos para o carrinho
+                } else {
+                    alert("Failed to add products to cart.");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Failed to add products to cart.");
+            });
+    }
+
+    // Aceder ao carrinho
+    function viewCart() {
+        const token = localStorage.getItem('user_token');
+        if (!token) {
+            alert("Please log in to view your cart.");
+            return;
+        }
+
+        fetch('/cart', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(response => response.text()) 
+        .then(html => {
+            document.body.innerHTML = html; 
+        })
+        .catch(error => {
+            console.error("Error accessing cart:", error);
+            alert("Unable to access cart.");
+        });
+    }
+        
+    // Checkout - enviar info para a base de dados
+    function checkout() {
+        //console.log("Checkout function called"); 
+
+        const token = localStorage.getItem('user_token');
+        if (!token) {
+            alert("Please log in to view your cart.");
+            return;
+        }
+
+        fetch('/api/cart/checkout', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Checkout failed');
+            return response.json();
+        })
+        .then(data => {
+            window.location.href = "/confirmation";
+        })
+        .catch(error => {
+            console.error("Error during checkout:", error);
+            alert("Erro ao realizar pedido.");
+        });
+    }
+</script>
+
+<!-- Login+logout btn function -->
 <script src="../public/js/logBtn.js"></script>
-<!-- logout -->
+<!-- Logout -->
 <script src="../public/js/logout.js"></script>
 </body>
 </html>

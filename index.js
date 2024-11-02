@@ -18,10 +18,10 @@ const controllerLogout = require("./controllers/logout");
 
 
 
-app.set("view engine", "ejs"); //definir template engine 
-app.use(express.json()); //configurar express para carregar middleware e lidar om o http body 
+app.set("view engine", "ejs"); // Definir template engine 
+app.use(express.json()); // Configurar express para carregar middleware e lidar om o http body 
 
-app.use('/public', express.static('public')); // para poder usar ficheiros externos de css+js
+app.use('/public', express.static('public')); // Para poder usar ficheiros externos de css+js
 
 
 app.use("/api/categories", controllerCategories);
@@ -33,7 +33,7 @@ app.use("/api/login", controllerLogin);
 app.use("/logout", controllerLogout);
 
 
-//home page
+// Home page
 app.get("/", async (request, response) => {
 
     try {
@@ -45,7 +45,7 @@ app.get("/", async (request, response) => {
     }
 });
 
-//categorias + produtos page
+// Categorias + produtos page
 app.get("/categorie/:id", async (request, response) => {
     
     try {
@@ -64,17 +64,17 @@ app.get("/categorie/:id", async (request, response) => {
     }
 });
 
-//login page
-app.get("/login", async (request, response) => {
+// Login page
+app.get("/login", (request, response) => {
     return response.render("login.ejs");
 });
 
-//registo page
-app.get("/register", async (request, response) => {
+// Registo page
+app.get("/register", (request, response) => {
     return response.render("register.ejs");
 }); 
 
-//carrinho + confirmação da encomenda
+// Carrinho 
 app.get('/cart', auth, (request, response) => {
     const authHeader = request.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
@@ -84,15 +84,17 @@ app.get('/cart', auth, (request, response) => {
     jwt.verify(token, secretKey, (err, decoded) => {
         if (err) return response.status(403).send('Invalid Token');
 
-        // ver produtos no carrinho e calcular o total
+        // Ver produtos no carrinho e calcular o total
         const cartProducts = decoded.cartProducts || [];
         const total = cartProducts.reduce((acc, product) => acc + (product.price * product.quantity), 0);
 
-        response.render('cart', { cartProducts, total });
+        return response.render('cart', { cartProducts, total });
     });
 });
-app.get("/confirmation", auth, (request, response) => {
-    response.render("confirmation"); 
+
+// Confirmação da encomenda
+app.get("/confirmation", (request, response) => {
+    return response.render("confirmation"); 
 });
 
 

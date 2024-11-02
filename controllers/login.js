@@ -41,19 +41,26 @@ router.post("/", async (request, response) => {
         "user_id": user.user_id, 
         "email": user.email,
         "is_admin": user.is_admin
-       // "cartProducts": []
     };
 
     const secretKey = process.env.JWT_SECRET_KEY;
+    if (!secretKey) {
+        return response.status(500).send({ "message": "Server error: Missing secret key" });
+    }
+
     jwt.sign(payload, secretKey, (err, token) => {
+        if (err || !token) {
+            return response.status(500).send({ "message": "Error generating token" });
+        }
+
+        // enviar token se estiver tudo correto
         return response
-            .header({"Authorization": "Bearer "+token})
+            .header({ "Authorization": "Bearer " + token })
             .send({
-                    "Authorization": "Bearer "+token,
-                    "token": token
+                "Authorization": "Bearer " + token,
+                "token": token
             });
     });
-
 });
 
 module.exports = router;

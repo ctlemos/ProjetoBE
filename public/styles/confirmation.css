@@ -1,0 +1,12 @@
+.confirmation_info-wrapper {
+    text-align: center;
+    width: 80%;
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 3rem;
+}
+
+.confirmation_info {
+    margin-bottom: 20px;
+    padding: 1rem;
+}
