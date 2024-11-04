@@ -10,11 +10,11 @@ function reissueToken(payload) {
     return jwt.sign(payload, secretKey);
 }
 
-// mostrar carrinho
+// Mostrar carrinho
 router.get("/cart", auth, (request, response) => {
     const authHeader = request.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
-    console.log(authHeader)
+    // console.log(authHeader)
 
     jwt.verify(token, secretKey, (err, decoded) => {
         if (err) return response.status(403).send("Invalid Token");
@@ -28,7 +28,7 @@ router.get("/cart", auth, (request, response) => {
 
 // Adicionar ao carrinho
 router.post("/add-to-cart", auth, (request, response) => {
-    const authHeader = request.headers['authorization'];
+    const authHeader = request.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
     const secretKey = process.env.JWT_SECRET_KEY;
 
@@ -44,7 +44,7 @@ router.post("/add-to-cart", auth, (request, response) => {
             const existingProduct = cartProducts.find(p => p.productId === newProduct.productId);
 
             if (existingProduct) {
-                //atualizar total no cart
+                // Atualizar total no cart
                 existingProduct.quantity += newProduct.quantity;
             } else {
                 cartProducts.push(newProduct);

@@ -21,7 +21,7 @@ async function getProductPrice(productId) {
     return pool.execute('SELECT price FROM products WHERE product_id = ?', [productId]);
 }
 
-// inserir detalhes da encomenda 
+// Inserir detalhes da encomenda 
 async function insertOrderDetails(orderId, productId, quantity, priceEach) {
     return pool.execute(
         'INSERT INTO order_details (order_id, product_id, quantity, price_each) VALUES (?, ?, ?, ?)',

@@ -11,32 +11,32 @@ const validateUser = joi.object({
     password: joi.string().min(8).max(1000).required()
 });
 
-// rota de login
+// Rota de login
 router.post("/", async (request, response) => {
     const login = request.body;
 
-    // validar dados do login
+    // Validar dados do login
     try {
         await validateUser.validateAsync(login);
     } catch (err) {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
-    // encontrar user por email
+    // Encontrar user por email
     const user = await findUserByEmail(login.email);
 
-    // retornar erro quando não encontrado
+    // Retornar erro quando não encontrado
     if (!user) {
          return response.status(400).send({ "message": "Incorrect Credentials" });
     }
 
-    // verificar se a password corresponde à hashed password guardada na database
+    // Verificar se a password corresponde à hashed password guardada na database
     const success = await bcrypt.compare(login.password, user.password);
     if (!success) {
         return response.status(400).send({ "message": "Incorrect Credentials" });
     }
 
-    //se estiver tudo correto gerar JWT token 
+    // Se estiver tudo correto gerar JWT token 
     const payload = {
         "user_id": user.user_id, 
         "email": user.email,
@@ -53,7 +53,7 @@ router.post("/", async (request, response) => {
             return response.status(500).send({ "message": "Error generating token" });
         }
 
-        // enviar token se estiver tudo correto
+        // Enviar token se estiver tudo correto
         return response
             .header({ "Authorization": "Bearer " + token })
             .send({

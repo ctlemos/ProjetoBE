@@ -37,23 +37,23 @@ const validateCategorie = joi.object({
         })
 });
 
-// mostrar a categoria especifica com produtos e cart info
+// Mostrar a categoria especifica com produtos e cart info
 router.get("/view/:id", async (request, response) => {
     try {
-        // Fetch category details
+        // Mostrar detalhes das categorias
         const categorie = await getCategorieById(request.params.id);
         
         if (!categorie) {
             return response.status(404).send({ "message": "Categorie not found" });
         }
 
-        // buscar produtos por categoria_id
+        // Buscar produtos por categoria_id
         const products = await getProductsByCategoryId(request.params.id); 
 
-        // mostrar produtos do carrinho, da sessão, ou default nulo
+        // Mostrar produtos do carrinho, da sessão, ou default nulo
         const cartProducts = request.session.cartProducts || [];
 
-        // mostrar `categorie.ejs` com categoria, produtos e cart info/data 
+        // Mostrar `categorie.ejs` com categoria, produtos e cart info/data 
         response.render("categorie", { categorie, products, cartProducts });
     } catch (err) {
         console.error("Error displaying category page:", err.message);
@@ -61,7 +61,7 @@ router.get("/view/:id", async (request, response) => {
     }
 });
 
-// ver todos as categorias
+// Ver todos as categorias
 router.get("/", async (request, response) => {
     try {
         const categories = await getAllCategories();
@@ -72,7 +72,7 @@ router.get("/", async (request, response) => {
     }
 });
 
-// mostrar uma categoria por ID
+// Mostrar uma categoria por ID
 router.get("/:id", async (request, response) => {
     try {
         const categorie = await getCategorieById(request.params.id);
@@ -88,10 +88,10 @@ router.get("/:id", async (request, response) => {
     }
 });
 
-// criar uma nova categoria
+// Criar uma nova categoria
 router.post("/", auth, async (request, response) => {
     
-    //só o admin é que pode criar categorias
+    // Só o admin é que pode criar categorias
     if (!request.payload.is_admin) {
         return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
     }
@@ -104,7 +104,7 @@ router.post("/", auth, async (request, response) => {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
-    // criar categoria
+    // Criar categoria
     try {
         const categorie_id = await createCategorie(newCategorie);
         return response.status(201).send({ id: categorie_id, ...newCategorie });
@@ -114,24 +114,24 @@ router.post("/", auth, async (request, response) => {
     }
 });
 
-// atualizar uma categoria por ID
+// Atualizar uma categoria por ID
 router.put("/:id", auth, async (request, response) => {
 
-    //só o admin é que pode alterar uma categoria
+    // Só o admin é que pode alterar uma categoria
     if (!request.payload.is_admin) {
         return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
     }
 
     const updatedCategorie = request.body;
 
-    // validar os novos detalhes
+    // Validar os novos detalhes
     try {
         await validateCategorie.validateAsync(updatedCategorie);
     } catch (err) {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
-    // atualizar categoria
+    // Atualizar categoria
     try {
         const affectedRows = await updateCategorie(request.params.id, updatedCategorie);
         if (affectedRows === 0) {
@@ -144,10 +144,10 @@ router.put("/:id", auth, async (request, response) => {
     }
 });
 
-// apagar uma categoria por ID
+// Apagar uma categoria por ID
 router.delete("/:id", auth, async (request, response) => {
 
-    //só o amdin é que pode apagar uma categoria
+    // Só o amdin é que pode apagar uma categoria
     if (!request.payload.is_admin) {
         return response.status(403).send({ "message": "Forbidden: You do not have access to this action" });
     }

@@ -1,39 +1,54 @@
 function collectCartData() {
     const cartData = [];
+    let invalidItemFound = false; // Para verificar se a quantidade é inválida 
+
     document.querySelectorAll('.product-item').forEach((item, index) => {
         const productId = item.dataset.id; 
         const name = item.dataset.name;
         const price = parseFloat(item.dataset.price);
         const quantity = parseInt(document.getElementById(`quantity-${index}`).value) || 0;
+        
         if (quantity > 0) {
             cartData.push({ productId, name, price, quantity });
-        }
+        } else {
+            invalidItemFound = true;
+        }   
     });
 
-const token = localStorage.getItem('user_token');
-    fetch('/api/cart/add-to-cart', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ products: cartData })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert("Products added to cart successfully!");
-            localStorage.setItem('user_token', data.token); // atualizar o token com produtos para o carrinho
-        } else {
+    // Mostrar um alerta se existirem items com quantidade inválida
+    if (invalidItemFound) {
+        alert('Some items have a quantity of 0 and will not be added to the cart.');
+    }
+
+    // Avançar se existir uma quantidade válida
+    if (cartData.length > 0) {
+    // Adicionar info carrinho ao token
+    const token = localStorage.getItem('user_token');
+        fetch('/api/cart/add-to-cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ products: cartData })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert("Products added to cart successfully!");
+                localStorage.setItem('user_token', data.token); // Atualizar o token com produtos para o carrinho
+            } else {
+                alert("Failed to add products to cart.");
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
             alert("Failed to add products to cart.");
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert("Failed to add products to cart.");
-    });
-}
-    
+        });
+    }
+} 
+ 
+// Aceder ao carrinho
 function viewCart() {
     const token = localStorage.getItem('user_token');
     if (!token) {
@@ -58,6 +73,7 @@ function viewCart() {
     });
 }
     
+// Checkout - enviar info para a base de dados
 function checkout() {
     console.log("Checkout function called"); 
     const token = localStorage.getItem('user_token');

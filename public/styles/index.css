@@ -91,6 +91,42 @@ body {
     color: #fff;
 }
 
+/* BTN */
+.btn_wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn_wrapper button {
+    padding: 10px 20px;
+    margin: 5px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.btn_wrapper button a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.backBtn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    transition: background-color 0.3s;
+}
+
+.backBtn:hover {
+    background-color: #0056b3;
+}
+
 /* FOOTER */
 .hr {
     height: 1px;

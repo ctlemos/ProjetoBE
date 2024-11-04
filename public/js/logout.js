@@ -1,5 +1,5 @@
 document.getElementById("logoutButton").addEventListener("click", async () => {
-    //console.log(localStorage.getItem("user_token")); // Debug para ver se o token existe
+    // console.log(localStorage.getItem("user_token")); // Debug para ver se o token existe
 
     // Enviar POST request
     const response = fetch("/logout", {

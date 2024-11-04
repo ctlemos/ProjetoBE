@@ -4,7 +4,7 @@
     color: #666;
 }
 
-/*produtos */
+/* Produtos */
 .product-list {
     display: flex;
     flex-wrap: wrap;
@@ -31,7 +31,7 @@
     color: #333;
 }
 
-/* img produto */
+/* Img produto */
 .product_image {
     width: 100%;
     height: auto;
@@ -39,7 +39,7 @@
     border-radius: 5px;
 }
 
-/* butões */
+/* Butões */
 .product_card input[type="number"] {
     margin: 0.5rem 0;
     width: 60px;

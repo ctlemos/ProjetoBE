@@ -41,6 +41,10 @@
                     <button onclick="collectCartData()">Adicionar ao Carrinho</button>
                 </li>
             <% }) %>
+
+            <div class="btn_wrapper">
+                <button class="backBtn"><a href="/">Voltar</a></button>
+            </div>
         </section> 
         
         <div class='footer_wrapper'>
@@ -56,100 +60,9 @@
     </main>
 
 
-<script>
-    function collectCartData() {
-        const cartData = [];
-        document.querySelectorAll('.product-item').forEach((item, index) => {
-            const productId = item.dataset.id; 
-            const name = item.dataset.name;
-            const price = parseFloat(item.dataset.price);
-            const quantity = parseInt(document.getElementById(`quantity-${index}`).value) || 0;
-            if (quantity > 0) {
-                cartData.push({ productId, name, price, quantity });
-            }
-        });
 
-        // Adicionar info do carrinho ao token
-        const token = localStorage.getItem('user_token');
-            fetch('/api/cart/add-to-cart', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ products: cartData })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Products added to cart successfully!");
-                    localStorage.setItem('user_token', data.token); // Atualizar o token com produtos para o carrinho
-                } else {
-                    alert("Failed to add products to cart.");
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Failed to add products to cart.");
-            });
-    }
-
-    // Aceder ao carrinho
-    function viewCart() {
-        const token = localStorage.getItem('user_token');
-        if (!token) {
-            alert("Please log in to view your cart.");
-            return;
-        }
-
-        fetch('/cart', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        })
-        .then(response => response.text()) 
-        .then(html => {
-            document.body.innerHTML = html; 
-        })
-        .catch(error => {
-            console.error("Error accessing cart:", error);
-            alert("Unable to access cart.");
-        });
-    }
-        
-    // Checkout - enviar info para a base de dados
-    function checkout() {
-        //console.log("Checkout function called"); 
-
-        const token = localStorage.getItem('user_token');
-        if (!token) {
-            alert("Please log in to view your cart.");
-            return;
-        }
-
-        fetch('/api/cart/checkout', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('Checkout failed');
-            return response.json();
-        })
-        .then(data => {
-            window.location.href = "/confirmation";
-        })
-        .catch(error => {
-            console.error("Error during checkout:", error);
-            alert("Erro ao realizar pedido.");
-        });
-    }
-</script>
-
+<!-- Carrinho -->
+<script src="../public/js/cartData.js"></script>
 <!-- Login+logout btn function -->
 <script src="../public/js/logBtn.js"></script>
 <!-- Logout -->

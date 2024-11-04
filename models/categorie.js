@@ -2,14 +2,14 @@ const pool = require('./connection'); // MySQL connection pool
 
 // Ver todos as catgeorias
 async function getAllCategories() {
-    const [rows] = await pool.query('SELECT categorie_id, name FROM categories WHERE parent_id is NOT NULL'); //sub categorias
+    const [rows] = await pool.query('SELECT categorie_id, name FROM categories WHERE parent_id is NOT NULL'); // Sub categorias
     return rows;
 }
 
 // Econtrar categoria por ID
 async function getCategorieById(categorie_id) {
     const [rows] = await pool.query('SELECT name, description FROM categories WHERE categorie_id = ?', [categorie_id]);
-    return rows[0]; // retorna a primeira categoria encontrado ou indefinido
+    return rows[0]; // Retorna a primeira categoria encontrado ou indefinido
 }
 
 // Criar nova categoria

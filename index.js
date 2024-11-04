@@ -7,7 +7,6 @@ const auth = require("./middleware/auth");
 const {getProductsFromCategorie} = require("./models/product")
 const {getAllCategories, getCategorieById} = require("./models/categorie");
 
-
 const controllerCategories = require("./controllers/categories");
 const controllerProducts = require("./controllers/products");
 const controllerUsers = require("./controllers/users");
@@ -15,8 +14,6 @@ const controllerOrders = require("./controllers/orders");
 const controllerCart = require("./controllers/cart");
 const controllerLogin = require("./controllers/login");
 const controllerLogout = require("./controllers/logout");
-
-
 
 app.set("view engine", "ejs"); // Definir template engine 
 app.use(express.json()); // Configurar express para carregar middleware e lidar om o http body 
@@ -32,7 +29,6 @@ app.use("/api/cart", controllerCart);
 app.use("/api/login", controllerLogin);
 app.use("/logout", controllerLogout);
 
-
 // Home page
 app.get("/", async (request, response) => {
 
@@ -47,7 +43,6 @@ app.get("/", async (request, response) => {
 
 // Categorias + produtos page
 app.get("/categorie/:id", async (request, response) => {
-    
     try {
         const categorie = await getCategorieById(request.params.id);
         if (!categorie) {
@@ -76,7 +71,7 @@ app.get("/register", (request, response) => {
 
 // Carrinho 
 app.get('/cart', auth, (request, response) => {
-    const authHeader = request.headers['authorization'];
+    const authHeader = request.headers["authorization"];
     const token = authHeader && authHeader.split(' ')[1];
     const secretKey = process.env.JWT_SECRET_KEY;
 
