@@ -1,4 +1,9 @@
 const express = require("express");
+
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
 const joi = require("joi");
 const auth = require("../middleware/auth");
 const {
@@ -10,6 +15,9 @@ const {
 } = require("../models/product");
 
 const router = express.Router();
+
+// configurar multer para guardar temporariament o ficheiro
+const upload = multer({ dest: 'temp/' });
 
 // Validation schema para os produtos
 const validateProduct = joi.object({
@@ -45,7 +53,7 @@ router.get("/:id", async (request, response) => {
 });
 
 // Criar um novo produto
-router.post("/", auth, async (request, response) => {
+router.post("/", auth, upload.single('image'), async (request, response) => {
     
     // Só o admin é que pode criar produtos
     if (!request.payload.is_admin) {
@@ -61,12 +69,32 @@ router.post("/", auth, async (request, response) => {
         return response.status(400).send({ "message": err.details[0].message });
     }
 
+    // Varificar se foi feito o upload de uma imagem 
+    if (!request.file) {
+        return response.status(400).send({ "message": "Image file is required" });
+    }
+
     // Criar produto
     try {
+        // Ler o ficheiro de imagem e converter para Base64
+        const imageData = fs.readFileSync(request.file.path).toString('base64');
+        // Incluir a imagem Base64 data no objecto de produto
+        newProduct.image = imageData;
+
         const productId = await createProduct(newProduct);
+
+        // Apagar o ficheiro temporário depois da conversão
+        fs.unlinkSync(request.file.path);
+
         return response.status(201).send({ id: productId, ...newProduct });
     } catch (err) {
         console.error("Error creating product:", err.message);
+
+        // Apagar o temp file se houver um erro
+        if (fs.existsSync(request.file.path)) {
+            fs.unlinkSync(request.file.path);
+        }
+
         return response.status(400).send({"message":"Bad Request"});
     }
 });

@@ -6,6 +6,7 @@ const auth = require("./middleware/auth");
 
 const {getProductsFromCategorie} = require("./models/product")
 const {getAllCategories, getCategorieById} = require("./models/categorie");
+const {getUserById} = require("./models/user");
 
 const controllerCategories = require("./controllers/categories");
 const controllerProducts = require("./controllers/products");
@@ -68,6 +69,24 @@ app.get("/login", (request, response) => {
 app.get("/register", (request, response) => {
     return response.render("register.ejs");
 }); 
+
+// Perfil de usuário
+app.get("/user", auth, async (request, response) => {
+    try {
+        const userId = request.payload.user_id; // Aceder ao ID do user autenticado através do JTW 
+        const user = await getUserById(userId); // Buscar o user por ID
+        
+        if (user.length === 0) {
+            return response.status(404).send("User not found");
+        }
+        
+        return response.render("user.ejs", { user: user[0] });
+
+    } catch (err) {
+        console.error("Error fetching user:", err.message);
+        return response.status(500).send("Server Error");
+    }
+});
 
 // Carrinho 
 app.get('/cart', auth, (request, response) => {

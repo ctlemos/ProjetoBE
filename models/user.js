@@ -7,7 +7,7 @@ async function getAllUsers() {
 
 // Procurar user por ID
 async function getUserById(userId) {
-    const [rows] = await pool.query("SELECT user_id, name, last_name, email, FROM users WHERE user_id = ?", [userId]);
+    const [rows] = await pool.query("SELECT user_id, name, last_name, email FROM users WHERE user_id = ?", [userId]);
     return rows; 
 }
 

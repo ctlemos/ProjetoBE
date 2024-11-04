@@ -26,6 +26,31 @@ router.get("/cart", auth, (request, response) => {
     });
 });
 
+// Remover do carrinho
+router.delete("/delete-from-cart", auth, (request, response) => {
+    const authHeader = request.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+    const secretKey = process.env.JWT_SECRET_KEY;
+
+    if (!token) return response.status(401).send({ message: "Access Denied: No Token Provided" });
+
+    jwt.verify(token, secretKey, (err, decoded) => {
+        if (err) return response.status(403).send({ message: "Invalid Token" });
+
+        let cartProducts = decoded.cartProducts || [];
+        const productIdToRemove = request.body.productId;
+
+        // Remove the product with the specified productId
+        cartProducts = cartProducts.filter(p => p.productId !== productIdToRemove);
+
+        // Update and reissue the token with modified cartProducts
+        const newPayload = { ...decoded, cartProducts };
+        const newToken = reissueToken(newPayload);
+
+        response.send({ success: true, token: newToken });
+    });
+});
+
 // Adicionar ao carrinho
 router.post("/add-to-cart", auth, (request, response) => {
     const authHeader = request.headers["authorization"];
@@ -53,7 +78,7 @@ router.post("/add-to-cart", auth, (request, response) => {
 
         // Atualizar e reemitir o token com cartProducts modificados
         const newPayload = { ...decoded, cartProducts };
-        const newToken = jwt.sign(newPayload, secretKey);
+        const newToken = reissueToken(newPayload);
 
         response.send({ success: true, token: newToken });
     });
@@ -84,6 +109,5 @@ router.post("/checkout", auth, async (request, response) => {
         }
     });
 });
-
 
 module.exports = router;

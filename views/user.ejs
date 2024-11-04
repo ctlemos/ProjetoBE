@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="stylesheet" href="../public/styles/index.css">
+</head>
+<body>
+    <main>
+        <div class="navbar">
+            <div class="navbar__wrapper">
+                <nav class="navbar__menu">
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <div class="title_wrapper">
+            <h1 class="title">Editar Conta:</h1>
+        </div>
+        <!-- Debug: -->
+        <!--  <pre><%= JSON.stringify(user, null, 2) %></pre> -->
+        <div class="form_container">
+            <% if (user) { %>
+                <form id="userForm" method="post" action="/api/users">
+                    <div class="form_group">
+                        <label for="name">Nome:</label>
+                        <input type="text" id="name" name="name" value="<%= user.name %>">
+                    </div>
+                    <div class="form_group">
+                        <label for="last_name">Apelido:</label>
+                        <input type="text" id="last_name" name="last_name" value="<%= user.last_name %>">
+                    </div>
+                    <div class="form_group">
+                        <label>Email:</label>
+                        <input type="email" id="email" name="email" value="<%= user.email %>">
+                    </div>
+                    <div class="form_group">
+                        <label>NIF:</label>
+                        <input type="text" id="nif" name="nif" value="<%= user.nif %>">
+                    </div>
+                    <div class="form_group">
+                        <label>Telemóvel:</label>
+                        <input type="text" id="phone" name="phone" value="<%= user.phone %>">
+                    </div>
+                    <div class="form_group">
+                        <label>Morada:</label>
+                        <input type="text" id="address" name="address" value="<%= user.address %>">
+                    </div>
+                    <div class="form_group">
+                        <label>Código Postal:</label>
+                        <input type="text" id="postal_code" name="postal_code" value="<%= user.postal_code %>">
+                    </div>
+                    <div class="form_group">
+                        <label>Cidade:</label>
+                        <input type="text" id="city" name="city" value="<%= user.city %>">
+                    </div>
+                    
+                    
+                    <div class="form_group">
+                        <button type="submit" class="submit-btn">Atualizar</button>
+                    </div>
+                </form>
+            <% } else { %>
+                <p>No user found.</p>
+            <% } %>
+        </div>
+
+        <div class='footer_wrapper'>
+            <footer>
+                <hr class="hr"/>
+                <p class='footer_info'>© Copyright 2024 Olga Lemos - Parabéns | <small>Todos os direitos reservados</small></p>
+                <p class='footer_info'>
+                    Rua dos Namorados, nº 242 3750-722 — Recardães, Aveiro - Portugal <br> 
+                    +351 933 251 197 (Custo chamada para rede fixa nacional)
+                </p>
+            </footer> 
+        </div>        
+    </main>
+
+<!-- Atualizar User -->
+<script src="../public/js/updateUser.js"></script>   
+</body>
+</html>

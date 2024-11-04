@@ -111,7 +111,7 @@ router.post("/", auth, async (request, response) => {
         console.log("Calculated Total Price for Order:", totalPrice);
         order.totalPrice = totalPrice;
 
-        // Inserir encomenda com o preço final 
+        // Inserir encomenda com o preço final
         const orderId = await insertOrder(order.user.user_id, order.totalPrice);
 
         for (const product of order.products) {

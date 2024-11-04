@@ -35,6 +35,10 @@
                                 <strong>Preço Unitário:</strong> <%= product.price %> €<br>
                                 <strong>Quantidade:</strong> <%= product.quantity %><br>
                                 <strong>Total:</strong> <%= (product.price * product.quantity).toFixed(2) %> €
+
+                                <div class="btn_wrapper">
+                                    <button type="button" class="deleteBtn" onclick="deleteCartItem(`<%= product.productId %>`)">Remover</button>
+                                </div>
                             </li>
                         <% }) %>
                     </ul>
@@ -64,6 +68,7 @@
             </footer> 
         </div>
     </main>
+
 
     <!-- Login+logout btn function -->
     <script src="../public/js/logBtn.js"></script>

@@ -20,6 +20,7 @@ function collectCartData() {
         alert('Some items have a quantity of 0 and will not be added to the cart.');
     }
 
+
     // Avançar se existir uma quantidade válida
     if (cartData.length > 0) {
     // Adicionar info carrinho ao token
@@ -99,5 +100,31 @@ function checkout() {
     .catch(error => {
         console.error("Error during checkout:", error);
         alert("Erro ao realizar pedido.");
+    });
+}
+
+function deleteCartItem(productId) {
+    const token = localStorage.getItem('user_token');
+    fetch('/api/cart/delete-from-cart', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ productId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Product removed from cart successfully!");
+            localStorage.setItem('user_token', data.token); // Atualizar token
+            location.reload(); // Refrescar página 
+        } else {
+            alert("Failed to remove product from cart.");
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert("Failed to remove product from cart.");
     });
 }

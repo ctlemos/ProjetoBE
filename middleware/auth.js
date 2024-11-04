@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 function auth(request, response, next) {
 
     const header = request.header("Authorization"); 
+    // const header = request.header["authorization"] || request.header["Authorization"]; // Case-insensitive way
+
 
     if( !header) {
         return response.status(401).send({"message": "Authorization header missing"});
@@ -17,9 +19,10 @@ function auth(request, response, next) {
             return response.status(400).send(err);
         }
 
-        request.payload = payload; // guardar o payload dentro do request global
-        return next(); // invocar a proxima função da rota de Express
+        request.payload = payload; // Guardar o payload dentro do request global
+        return next(); // Invocar a proxima função da rota de Express
     });
 }
 
-module.exports = auth;  
+
+module.exports = auth;

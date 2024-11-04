@@ -19,7 +19,7 @@
     border-radius: 5px;
 }
 
-.checkoutBtn {
+.checkoutBtn, .deleteBtn {
     color: white;
     background-color: palevioletred;
     border: none;
@@ -31,6 +31,6 @@
     transition: background-color 0.3s;
 }
 
-.checkoutBtn:hover {
+.checkoutBtn:hover, .deleteBtn:hover {
     background-color: #8e65b5;
 }
